@@ -22,11 +22,11 @@
 - In motion: a large React Compiler lint-rule series (`chore/lint-*`, #5380–#5387) and the 6.11.0 -> v7 merge (#5376). Avoid rebasing unrelated work onto those.
 
 ## Issue-area health
-- CheckboxWidget `required` attribute: #5388 open, unassigned, 0 comments, label `needs triage` (updated 2026-09-29). The report names core plus antd/chakra-ui/shadcn; daisyui already moved by #5318 (merged #5356). Fixable.
+- CheckboxWidget `required` attribute: #5388 open, unassigned, 0 comments, label `needs triage` (updated 2026-09-29). The report is against `v7` and names core plus antd/chakra-ui/shadcn, noting daisyui was fixed there in #5356; on `main` core, antd, chakra-ui, daisyui, primereact and shadcn still pass the raw `required` to the input.
 - No maintainer claims #5388 and no PR references it (open, closed, or merged) apart from #5356, which is unrelated (daisyui label rendering).
 
 ## Gap ledger (dedupe — READ FIRST, never re-pick)
-- `2026-09-30` issue #5388 (CheckboxWidget renders HTML `required` on a required boolean field, blocking a valid `false` submit) — pr-opened (fork PR pending) — fix: pass `trueValueRequired` instead of the raw `required` to the input in core and in antd/chakra-ui/daisyui/primereact/shadcn; add shared-form-test coverage for the `false`-valid and `true`-only cases.
+- `2026-09-30` issue #5388 (CheckboxWidget renders HTML `required` on a required boolean field, blocking a valid `false` submit) — pr-opened https://github.com/olitreadwell/react-jsonschema-form/pull/39 (fork-internal, base `main`, commit 4167b6bd5, fork CI green on 20.x/22.x/24.x) — fix: pass `trueValueRequired` instead of the raw `required` to the input in core/antd/chakra-ui/daisyui/primereact/shadcn, plus shared-form-test coverage for the `false`-valid and `true`-only cases. Lesson: the issue was filed against `v7`, so re-check the target branch's own code (`main` still carried the bug in daisyui and primereact).
 
 ## Mined gaps (discovered, not yet attempted)
 - none yet
