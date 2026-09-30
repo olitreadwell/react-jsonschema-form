@@ -14323,7 +14323,6 @@ exports[`single fields > required checkbox field 1`] = `
                                         class="ant-checkbox-input"
                                         id="root_agree"
                                         name="root_agree"
-                                        required=""
                                         type="checkbox"
                                         value=""
                                       />
@@ -14425,7 +14424,6 @@ exports[`single fields > required checkbox field, default true 1`] = `
                                         class="ant-checkbox-input"
                                         id="root_agree"
                                         name="root_agree"
-                                        required=""
                                         type="checkbox"
                                         value=""
                                       />

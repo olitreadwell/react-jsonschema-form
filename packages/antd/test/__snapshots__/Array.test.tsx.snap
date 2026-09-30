@@ -2837,7 +2837,6 @@ exports[`nameGenerator > bracketNameGenerator > fixed array 1`] = `
                                             class="ant-checkbox-input"
                                             id="root_2"
                                             name="root[2]"
-                                            required=""
                                             type="checkbox"
                                             value=""
                                           />
