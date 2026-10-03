@@ -42,10 +42,31 @@ should change the heading of the (upcoming) version to include a major version b
 
 # 6.11.0
 
+## @rjsf/antd
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/chakra-ui
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
 ## @rjsf/core
 
 - Fixed a `schema` prop change being silently dropped when it adds a property with a `default`, either as the parent's reply to `onChange` or at any point after a change to an uncontrolled form. The guard that keeps a oneOf/anyOf option switch from reverting now only applies when the form re-derives its own `formData` (an uncontrolled form, or a parent holding what `onChange` emitted, including when it reshaped the emitted value by spreading it, storing `undefined` as `null` or round-tripping it through JSON) with the same `schema` and `experimental_defaultFormStateBehavior`, and it keeps only that `formData` rather than dropping the rest of the prop update, fixing [#5294](https://github.com/rjsf-team/react-jsonschema-form/issues/5294)
 - Fixed switching between `oneOf`/`anyOf` options keeping a value the previous option's `default` put there, so a property whose value still matches that default, or a whole option that does, now picks up the new option's `default` the way a scalar property already did, and switching back to an option restores its own defaults. A property the new option cannot hold as it stands now picks the new `default` up as well instead of arriving empty — one whose type differs between the options, or a `readOnly` one edited away from its default. Values are compared whole, so a nested object the user has partly edited keeps the rest of the old option's defaults, and a value equal to the old default is replaced no matter who supplied it, including one passed in `formData`, since the two cannot be told apart, fixing [#4476](https://github.com/rjsf-team/react-jsonschema-form/issues/4476)
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/daisyui
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/primereact
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/shadcn
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
 
 ## @rjsf/utils
 
