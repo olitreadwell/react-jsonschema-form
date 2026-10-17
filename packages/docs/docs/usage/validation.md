@@ -428,7 +428,7 @@ render((
 ), document.getElementById("app"));
 ```
 
-> Note: Your custom `ErrorList` template will only render when `showErrorList` is `top` or `botttom`.
+> Note: Your custom `ErrorList` template will only render when `showErrorList` is `top` or `bottom`.
 
 The following props are passed to `ErrorList` as defined by the `ErrorListProps` interface in `@rjsf/utils`:
 
