@@ -70,7 +70,7 @@ export default function CheckboxWidget<
           onChange={handleChange}
           onBlur={handleBlur}
           onFocus={handleFocus}
-          required={required}
+          required={trueValueRequired}
           aria-describedby={ariaDescribedByIds(id)}
         />
         {labelValue(<Label id={id} text={label} required={trueValueRequired} />, hideLabel, false)}

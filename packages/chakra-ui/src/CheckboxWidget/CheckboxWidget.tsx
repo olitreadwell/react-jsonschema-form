@@ -47,7 +47,7 @@ export default function CheckboxWidget<
   const chakraProps = getChakra({ uiSchema });
 
   return (
-    <Field mb={1} required={required} {...chakraProps}>
+    <Field mb={1} required={trueValueRequired} {...chakraProps}>
       {!hideLabel && description && (
         <DescriptionFieldTemplate
           id={descriptionId(id)}
