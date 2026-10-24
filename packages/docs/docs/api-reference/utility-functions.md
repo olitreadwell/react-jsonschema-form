@@ -1034,7 +1034,7 @@ If the schema has a `oneOf` or `anyOf`, then the value is the list of either:
 Given a list of `properties` and an `order` list, returns a list that contains the `properties` ordered correctly.
 If `order` is not an array, then the untouched `properties` list is returned.
 Otherwise `properties` is ordered per the `order` list.
-If `order` contains a '_' then any `properties` that are not mentioned explicity in `order` will be places in the location of the `_`.
+If `order` contains a '_' then any `properties` that are not mentioned explicitly in `order` will be places in the location of the `_`.
 
 #### Parameters
 
