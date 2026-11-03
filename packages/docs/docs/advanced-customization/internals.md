@@ -4,7 +4,7 @@ Miscellaneous internals of react-jsonschema-form are listed here.
 
 ## JSON Schema supporting status
 
-This component follows [JSON Schema](http://json-schema.org/documentation.html) specs. We currently support JSON Schema-07 by default, but we also support other JSON schema versions through the [custom schema validation](../usage/validation.md#custom-meta-schema-validation) feature. Due to the limitation of form widgets, there are some exceptions as follows:
+This component follows [JSON Schema](https://json-schema.org/) specs. We currently support JSON Schema-07 by default, but we also support other JSON schema versions through the [custom schema validation](../usage/validation.md#custom-meta-schema-validation) feature. Due to the limitation of form widgets, there are some exceptions as follows:
 
 - `additionalItems` keyword for arrays
 
@@ -22,7 +22,7 @@ This component follows [JSON Schema](http://json-schema.org/documentation.html) 
 
 ## Handling of schema defaults
 
-This library automatically fills default values defined in the [JSON Schema](http://json-schema.org/documentation.html) as initial values in your form. This also works for complex structures in the schema. If a field has a default defined, it should always appear as default value in form. This also works when using [schema dependencies](../json-schema/dependencies.md#schema-dependencies).
+This library automatically fills default values defined in the [JSON Schema](https://json-schema.org/) as initial values in your form. This also works for complex structures in the schema. If a field has a default defined, it should always appear as default value in form. This also works when using [schema dependencies](../json-schema/dependencies.md#schema-dependencies).
 
 Since there is a complex interaction between any supplied original form data and any injected defaults, this library tries to do the injection in a way which keeps the original intention of the original form data.
 

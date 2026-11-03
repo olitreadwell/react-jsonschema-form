@@ -21,7 +21,7 @@ const { SelectWidget, DateWidget } = Widgets;
 
 // Override the static functions on the antd widgets so that we can "disable" the getPopupContainer callback
 // function because, when it is active, the `SelectPatcher` code below along with the `ConfigProvider` for the antd
-// theme conditional branch won't take effect as the antd component `getPopupContainer()` supercedes it, so we make it
+// theme conditional branch won't take effect as the antd component `getPopupContainer()` supersedes it, so we make it
 // return undefined to disable it.
 // @ts-expect-error TS2339 because the Widget interface doesn't have the static function on it
 SelectWidget.getPopupContainerCallback = () => undefined;
