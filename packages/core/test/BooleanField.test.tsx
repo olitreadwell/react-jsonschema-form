@@ -63,7 +63,7 @@ describe('BooleanField', () => {
   });
 
   describe('HTML5 required attribute', () => {
-    it('should render a required attribute for simple required fields', () => {
+    it('should not render a required attribute for simple required fields', () => {
       const { node } = createFormComponent({
         schema: {
           type: 'object',
@@ -76,7 +76,7 @@ describe('BooleanField', () => {
         },
       });
 
-      expect(node.querySelector('input[type=checkbox]')).toHaveAttribute('required', '');
+      expect(node.querySelector('input[type=checkbox]')).not.toHaveAttribute('required');
     });
 
     it('should add a required attribute if the schema uses const with a true value', () => {

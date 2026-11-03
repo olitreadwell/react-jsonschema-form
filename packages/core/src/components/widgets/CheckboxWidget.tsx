@@ -78,7 +78,7 @@ function CheckboxWidget<T = any, S extends StrictRJSFSchema = RJSFSchema, F exte
           id={id}
           name={htmlName || id}
           checked={typeof value === 'undefined' ? false : value}
-          required={required}
+          required={trueValueRequired}
           disabled={disabled || readonly}
           autoFocus={autofocus}
           onChange={handleChange}

@@ -76,7 +76,7 @@ export default function CheckboxWidget<
       id={id}
       name={htmlName || id}
       checked={value}
-      required={required}
+      required={trueValueRequired}
       disabled={disabled || readonly}
       onChange={handleChange}
       onFocus={handleFocus}

@@ -462,7 +462,8 @@ export function formTests(Form: ComponentType<FormProps>) {
           },
         },
       };
-      const { asFragment } = render(<Form schema={schema} validator={validator} />);
+      const { asFragment, container } = render(<Form schema={schema} validator={validator} />);
+      expect(container.querySelector('input[type="checkbox"]')?.hasAttribute('required')).toBe(false);
       expect(asFragment()).toMatchSnapshot();
     });
 
@@ -1318,5 +1319,23 @@ export function formTests(Form: ComponentType<FormProps>) {
     };
     const { asFragment } = render(<Form schema={schema} validator={validator} uiSchema={uiSchema} />);
     expect(asFragment()).toMatchSnapshot();
+  });
+
+  // This test deliberately lives at the end of the file: it adds one more render, which shifts
+  // the auto-generated ids some themes use and would otherwise churn their snapshots.
+  test('required checkbox field that only allows true keeps the required attribute', () => {
+    const schema: RJSFSchema = {
+      type: 'object',
+      required: ['agree'],
+      properties: {
+        agree: {
+          type: 'boolean',
+          title: 'I Agree',
+          const: true,
+        },
+      },
+    };
+    const { container } = render(<Form schema={schema} validator={validator} />);
+    expect(container.querySelector('input[type="checkbox"]')?.hasAttribute('required')).toBe(true);
   });
 }

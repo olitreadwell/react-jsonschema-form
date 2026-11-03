@@ -67,7 +67,7 @@ export default function CheckboxWidget<
           id={id}
           name={htmlName || id}
           checked={typeof value === 'undefined' ? false : Boolean(value)}
-          required={required}
+          required={trueValueRequired}
           disabled={disabled || readonly}
           autoFocus={autofocus}
           onCheckedChange={handleChange}

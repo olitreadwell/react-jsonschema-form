@@ -11049,7 +11049,6 @@ exports[`single fields > required checkbox field 1`] = `
                           class="checkbox"
                           id="root_agree"
                           name="root_agree"
-                          required=""
                           type="checkbox"
                         />
                       </div>
@@ -11133,7 +11132,6 @@ exports[`single fields > required checkbox field, default true 1`] = `
                           class="checkbox"
                           id="root_agree"
                           name="root_agree"
-                          required=""
                           type="checkbox"
                         />
                       </div>
