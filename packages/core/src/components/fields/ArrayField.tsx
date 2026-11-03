@@ -14,6 +14,7 @@ import type {
   UIOptionsType,
 } from '@rjsf/utils';
 import {
+  setByPath,
   allowAdditionalItems,
   getTemplate,
   getUiOptions,
@@ -22,6 +23,7 @@ import {
   isCustomWidget,
   isFixedItems,
   isFormDataAvailable,
+  isObject,
   optionsList,
   shouldRenderOptionalField,
   toFieldPathId,
@@ -30,9 +32,6 @@ import {
   ID_KEY,
   TranslatableString,
 } from '@rjsf/utils';
-import isObject from 'lodash/isObject';
-import set from 'lodash/set';
-import uniqueId from 'lodash/uniqueId';
 
 /** Type used to represent the keyed form data used in the state */
 interface KeyedFormDataType<T> {
@@ -41,8 +40,11 @@ interface KeyedFormDataType<T> {
 }
 
 /** Used to generate a unique ID for an element in a row */
+let rowIdCounter = 0;
+
 function generateRowId() {
-  return uniqueId('rjsf-array-item-');
+  rowIdCounter += 1;
+  return `rjsf-array-item-${rowIdCounter}`;
 }
 
 /** Converts the `formData` into `KeyedFormDataType` data, using the `generateRowId()` function to create the key
@@ -709,10 +711,7 @@ function FixedArray<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends 
   const { OptionalDataControlsField } = fields;
   const renderOptionalField = shouldRenderOptionalField<T[], S, F>(registry, schema, required, uiSchema);
   const hasFormData = isFormDataAvailable<T[]>(formData);
-  const schemaItems: S[] = useMemo(
-    () => (isObject(schema.items) ? (schema.items as S[]) : ([] as S[])),
-    [schema.items],
-  );
+  const schemaItems = useMemo<S[]>(() => (Array.isArray(schema.items) ? (schema.items as S[]) : []), [schema.items]);
   const hasAdditionalItems = isObject(schema.additionalItems);
   // All the children will use childFieldPathId if present in the props, falling back to the fieldPathId
   const childFieldPathId = props.childFieldPathId ?? fieldPathId;
@@ -902,9 +901,9 @@ export default function ArrayField<T = any, S extends StrictRJSFSchema = RJSFSch
         for (const idx of Object.keys(errorSchemaRef.current)) {
           const i = parseInt(idx, 10);
           if (index === undefined || i < index) {
-            set(newErrorSchema, [i], errorSchemaRef.current[i]);
+            setByPath(newErrorSchema, i, errorSchemaRef.current[i]);
           } else if (i >= index) {
-            set(newErrorSchema, [i + 1], errorSchemaRef.current[i]);
+            setByPath(newErrorSchema, i + 1, errorSchemaRef.current[i]);
           }
         }
       }
@@ -942,9 +941,9 @@ export default function ArrayField<T = any, S extends StrictRJSFSchema = RJSFSch
         for (const idx of Object.keys(errorSchemaRef.current)) {
           const i = parseInt(idx, 10);
           if (i <= index) {
-            set(newErrorSchema, [i], errorSchemaRef.current[i]);
+            setByPath(newErrorSchema, i, errorSchemaRef.current[i]);
           } else if (i > index) {
-            set(newErrorSchema, [i + 1], errorSchemaRef.current[i]);
+            setByPath(newErrorSchema, i + 1, errorSchemaRef.current[i]);
           }
         }
       }
@@ -982,9 +981,9 @@ export default function ArrayField<T = any, S extends StrictRJSFSchema = RJSFSch
         for (const idx of Object.keys(errorSchemaRef.current)) {
           const i = parseInt(idx, 10);
           if (i < index) {
-            set(newErrorSchema, [i], errorSchemaRef.current[i]);
+            setByPath(newErrorSchema, i, errorSchemaRef.current[i]);
           } else if (i > index) {
-            set(newErrorSchema, [i - 1], errorSchemaRef.current[i]);
+            setByPath(newErrorSchema, i - 1, errorSchemaRef.current[i]);
           }
         }
       }
@@ -1013,11 +1012,11 @@ export default function ArrayField<T = any, S extends StrictRJSFSchema = RJSFSch
         for (const idx of Object.keys(errorSchemaRef.current)) {
           const i = parseInt(idx, 10);
           if (i === index) {
-            set(newErrorSchema, [newIndex], errorSchemaRef.current[index]);
+            setByPath(newErrorSchema, newIndex, errorSchemaRef.current[index]);
           } else if (i === newIndex) {
-            set(newErrorSchema, [index], errorSchemaRef.current[newIndex]);
+            setByPath(newErrorSchema, index, errorSchemaRef.current[newIndex]);
           } else {
-            set(newErrorSchema, [idx], errorSchemaRef.current[i]);
+            setByPath(newErrorSchema, idx, errorSchemaRef.current[i]);
           }
         }
       }

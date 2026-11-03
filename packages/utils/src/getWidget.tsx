@@ -1,10 +1,8 @@
 import { createElement } from 'react';
-import get from 'lodash/get';
-import set from 'lodash/set';
 import ReactIs from 'react-is';
 
-import getSchemaType from './getSchemaType';
-import type { FormContextType, RJSFSchema, Widget, RegistryWidgetsType, StrictRJSFSchema } from './types';
+import getSchemaType from './getSchemaType.ts';
+import type { FormContextType, RJSFSchema, Widget, RegistryWidgetsType, StrictRJSFSchema } from './types.ts';
 
 /** The map of schema types to widget type to widget name
  */
@@ -71,13 +69,15 @@ const widgetMap: Record<string, Record<string, string>> = {
 function mergeWidgetOptions<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
   AWidget: Widget<T, S, F>,
 ) {
-  let MergedWidget: Widget<T, S, F> | undefined = get(AWidget, 'MergedWidget');
+  let { MergedWidget } = AWidget;
   // cache return value as property of widget for proper react reconciliation
   if (!MergedWidget) {
     // oxlint-disable-next-line typescript/no-deprecated
     const defaultOptions = AWidget.defaultProps?.options || {};
     MergedWidget = ({ options, ...props }) => <AWidget options={{ ...defaultOptions, ...options }} {...props} />;
-    set(AWidget, 'MergedWidget', MergedWidget);
+    // The mutation is deliberate: the wrapper is cached on the widget itself for React reconciliation
+    // oxlint-disable-next-line no-param-reassign
+    AWidget.MergedWidget = MergedWidget;
   }
   return MergedWidget;
 }

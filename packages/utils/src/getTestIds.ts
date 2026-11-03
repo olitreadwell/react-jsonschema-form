@@ -1,7 +1,7 @@
-import get from 'lodash/get';
-import uniqueId from 'lodash/uniqueId';
+import { getByPath } from './pathUtils.ts';
+import type { TestIdShape } from './types.ts';
 
-import type { TestIdShape } from './types';
+let testIdCounter = 0;
 
 /** Returns an object of test IDs that can only be used in test mode. If the function is called in a test environment
  * (`NODE_ENV === 'test'`, this is set by vitest) then a Proxy object will be returned. If a key within the returned
@@ -20,9 +20,9 @@ import type { TestIdShape } from './types';
  */
 export default function getTestIds(): TestIdShape {
   // For some reason, even though process.env contains the value of `test` for NODE_ENV, accessing it directly returns
-  // 'development'. Using `get()` does, in fact, return test so sticking with it.
+  // 'development'. Using `getByPath()` does, in fact, return test so sticking with it.
   // Use globalThis to access process without requiring @types/node (TS6 compatibility).
-  if (get(globalThis, 'process.env.NODE_ENV') !== 'test') {
+  if (getByPath(globalThis, ['process', 'env', 'NODE_ENV']) !== 'test') {
     return {};
   }
 
@@ -32,7 +32,8 @@ export default function getTestIds(): TestIdShape {
     {
       get(_obj, prop) {
         if (!ids.has(prop)) {
-          ids.set(prop, uniqueId('test-id-'));
+          testIdCounter += 1;
+          ids.set(prop, `test-id-${testIdCounter}`);
         }
         return ids.get(prop);
       },

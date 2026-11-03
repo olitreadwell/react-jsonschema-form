@@ -10,11 +10,15 @@ import type {
 } from '@rjsf/utils';
 import { deepEquals, hashForSchema, ID_KEY, JUNK_OPTION_ID, retrieveSchema } from '@rjsf/utils';
 import type { ValidationError } from 'ata-validator';
-import get from 'lodash/get';
 
-import type { RawValidationErrorsType } from './processRawValidationErrors';
-import processRawValidationErrors from './processRawValidationErrors';
-import type { CompiledValidateFunction, Localizer, SuppressDuplicateFilteringType, ValidatorFunctions } from './types';
+import type { RawValidationErrorsType } from './processRawValidationErrors.ts';
+import processRawValidationErrors from './processRawValidationErrors.ts';
+import type {
+  CompiledValidateFunction,
+  Localizer,
+  SuppressDuplicateFilteringType,
+  ValidatorFunctions,
+} from './types.ts';
 
 /** `ValidatorType` implementation that uses an ata precompiled validator as created by the
  * `compileSchemaValidators()` function provided by the `@rjsf/validator-ata` library.
@@ -82,7 +86,7 @@ export default class ATAPrecompiledValidator<
    * @returns - The precompiled validator function associated with this schema
    */
   getValidator(schema: S) {
-    const key = get(schema, ID_KEY) || hashForSchema(schema);
+    const key = schema[ID_KEY] || hashForSchema(schema);
     const validator = this.validateFns[key];
     if (!validator) {
       throw new Error(`No precompiled validator function was found for the given schema for "${key}"`);
@@ -176,7 +180,7 @@ export default class ATAPrecompiledValidator<
    */
   isValid(schema: S, formData: T | undefined, rootSchema: S) {
     this.ensureSameRootSchema(rootSchema, formData);
-    if (get(schema, ID_KEY) === JUNK_OPTION_ID) {
+    if (schema[ID_KEY] === JUNK_OPTION_ID) {
       return false;
     }
     const validator = this.getValidator(schema);

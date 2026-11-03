@@ -15,8 +15,8 @@ import {
   shouldRenderOptionalField,
   TranslatableString,
 } from '@rjsf/utils';
-import get from 'lodash/get';
-import isEmpty from 'lodash/isEmpty';
+
+import formDataForNewOption from './formDataForNewOption.ts';
 
 /** The `AnyOfField` component is used to render a field in the schema that is an `anyOf`, `allOf` or `oneOf`. It tracks
  * the currently selected option and cleans up any irrelevant data in `formData`.
@@ -29,7 +29,7 @@ function AnyOfField<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends 
   const {
     name,
     disabled = false,
-    errorSchema = {},
+    errorSchema,
     formData,
     fieldPathId,
     onBlur,
@@ -117,19 +117,25 @@ function AnyOfField<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends 
       const newOption = intOption >= 0 ? retrievedOptions[intOption] : undefined;
       const oldOption = selectedOption >= 0 ? retrievedOptions[selectedOption] : undefined;
 
-      let newFormData = schemaUtils.sanitizeDataForNewSchema(newOption, oldOption, formData);
-      if (newOption) {
-        // Call getDefaultFormState to make sure defaults are populated on change. Pass "excludeObjectChildren"
-        // so that only the root objects themselves are created without adding undefined children properties
-        newFormData = schemaUtils.getDefaultFormState(newOption, newFormData, 'excludeObjectChildren') as T;
-      }
+      const newFormData = formDataForNewOption<T, S, F>(schemaUtils, formData, newOption, oldOption, schema);
 
       setSelectedOption(intOption);
       skipNextOptionRecalculation.current = true;
       onChange(newFormData, fieldPathId.path, undefined, fieldId);
     },
     // setSelectedOption is stable (guaranteed by useState); skipNextOptionRecalculation is a ref
-    [selectedOption, retrievedOptions, disabled, readonly, schemaUtils, formData, fieldPathId, onChange, fieldId],
+    [
+      selectedOption,
+      retrievedOptions,
+      disabled,
+      readonly,
+      schema,
+      schemaUtils,
+      formData,
+      fieldPathId,
+      onChange,
+      fieldId,
+    ],
   );
 
   const { widgets, fields, translateString, globalUiOptions } = registry;
@@ -151,7 +157,7 @@ function AnyOfField<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends 
     ...uiOptions
   } = getUiOptions<T, S, F>(uiSchema, globalUiOptions);
   const Widget = getWidget<T, S, F>({ type: 'number' }, widget, widgets);
-  const rawErrors = get(errorSchema, ERRORS_KEY, []);
+  const rawErrors = errorSchema?.[ERRORS_KEY] ?? [];
   const fieldErrorSchema = { ...errorSchema } as ErrorSchema<T>;
   delete fieldErrorSchema[ERRORS_KEY];
   const displayLabel = schemaUtils.getDisplayLabel(schema, uiSchema, globalUiOptions);
@@ -221,7 +227,7 @@ function AnyOfField<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends 
         onChange={onOptionChange}
         onBlur={onBlur}
         onFocus={onFocus}
-        disabled={disabled || isEmpty(enumOptions)}
+        disabled={disabled || enumOptions.length === 0}
         multiple={false}
         rawErrors={rawErrors}
         errorSchema={fieldErrorSchema}

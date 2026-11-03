@@ -13,9 +13,14 @@ import type {
   StrictRJSFSchema,
 } from '@rjsf/utils';
 import {
+  getByPath,
+  hasByPath,
+  setByPath,
   ADDITIONAL_PROPERTY_FLAG,
   ANY_OF_KEY,
+  deepEquals,
   getTemplate,
+  getPropertySchema,
   getUiOptions,
   isFormDataAvailable,
   orderProperties,
@@ -23,17 +28,13 @@ import {
   toFieldPathId,
   useDeepCompareMemo,
   ONE_OF_KEY,
-  PROPERTIES_KEY,
   REF_KEY,
+  isObject,
   TranslatableString,
 } from '@rjsf/utils';
-import get from 'lodash/get';
-import has from 'lodash/has';
-import isObject from 'lodash/isObject';
-import set from 'lodash/set';
 import { Markdown } from 'markdown-to-jsx/react';
 
-import { ADDITIONAL_PROPERTY_KEY_REMOVE } from '../constants';
+import { ADDITIONAL_PROPERTY_KEY_REMOVE } from '../constants.ts';
 
 /** Returns a flag indicating whether the `name` field is required in the object schema
  *
@@ -129,27 +130,27 @@ function ObjectFieldPropertyFn<T = any, S extends StrictRJSFSchema = RJSFSchema,
     toFieldPathId(propertyName, globalFormOptions, fieldPathId.path),
   );
 
-  /** Returns the `onPropertyChange` handler for the `name` field. Handles the special case where a user is attempting
-   * to clear the data for a field added as an additional property. Calls the `onChange()` handler with the updated
-   * formData.
-   *
-   * @param name - The name of the property
-   * @param addedByAdditionalProperties - Flag indicating whether this property is an additional property
-   * @returns - The onPropertyChange callback for the `name` property
+  /** The `onChange` handler installed on this property's `SchemaField`. Handles the special case where the user
+   * clears a value at this property's own path when it was added as an additional property, coercing `undefined`
+   * to the empty string so the property's key input survives. Every other change, including any change to a
+   * descendant of this property, is forwarded to `onChange()` untouched.
    */
   const onPropertyChange = useCallback(
     (value: T | undefined, path: FieldPathList, newErrorSchema?: ErrorSchema<T>, id?: string) => {
-      // Don't set value = undefined for fields added by additionalProperties. Doing so removes them from the
-      // formData, which causes them to completely disappear (including the input field for the property name). Unlike
-      // fields which are "mandated" by the schema, these fields can be set to undefined by clicking a "delete field"
-      // button, so set empty values to the empty string.
+      // An `additionalProperties` value lives at this property's own path, so clearing its widget to `undefined`
+      // would drop the key from the formData and take the key input with it. Coerce that one case to the empty
+      // string.
+      // A descendant's path is this property's path plus at least one segment, so comparing to this
+      // property's own path (rather than merely its length) tells apart "this property changed" from "a
+      // descendant changed"; a cleared descendant must stay `undefined` so it is omitted from the formData
+      // exactly like a cleared property declared in `properties` (#5222).
       let normalizedValue = value;
-      if (value === undefined && addedByAdditionalProperties) {
+      if (value === undefined && addedByAdditionalProperties && deepEquals(path, innerFieldIdPathId.path)) {
         normalizedValue = '' as unknown as T;
       }
       onChange(normalizedValue, path, newErrorSchema, id);
     },
-    [onChange, addedByAdditionalProperties],
+    [onChange, addedByAdditionalProperties, innerFieldIdPathId],
   );
 
   /** The key change event handler; Called when the key associated with a field is changed for an additionalProperty.
@@ -275,7 +276,7 @@ export default function ObjectField<T = any, S extends StrictRJSFSchema = RJSFSc
 
       let index = 0;
       let newKey = preferredKey;
-      while (has(existingFormData, newKey)) {
+      while (hasByPath(existingFormData, newKey)) {
         index += 1;
         newKey = `${preferredKey}${duplicateKeySuffixSeparator}${index}`;
       }
@@ -294,8 +295,7 @@ export default function ObjectField<T = any, S extends StrictRJSFSchema = RJSFSc
     const newFormData = { ...formData } as T;
     const newKey = getAvailableKey('newKey', newFormData);
     if (schema.patternProperties) {
-      // Cast this to make the `set` work properly
-      set(newFormData as GenericObjectType, newKey, null);
+      setByPath(newFormData, newKey, null);
     } else {
       let type: RJSFSchema['type'] = undefined;
       let constValue: RJSFSchema['const'] = undefined;
@@ -317,8 +317,7 @@ export default function ObjectField<T = any, S extends StrictRJSFSchema = RJSFSc
       }
 
       const newValue = constValue ?? defaultValue ?? getDefaultValue<T, S, F>(translateString, type);
-      // Cast this to make the `set` work properly
-      set(newFormData as GenericObjectType, newKey, newValue);
+      setByPath(newFormData, newKey, newValue);
     }
 
     if (lastRenamedProperty.current.previousKey === newKey) {
@@ -426,11 +425,11 @@ export default function ObjectField<T = any, S extends StrictRJSFSchema = RJSFSc
           key={getStableKey(propertyName)}
           propertyName={propertyName}
           required={isRequired<S>(schema, propertyName)}
-          schema={get(schema, [PROPERTIES_KEY, propertyName], {}) as S}
+          schema={getPropertySchema<S>(schema, propertyName)}
           uiSchema={fieldUiSchema}
-          errorSchema={get(errorSchema, [propertyName])}
+          errorSchema={getByPath(errorSchema, propertyName)}
           fieldPathId={childFieldPathId}
-          formData={get(formData, [propertyName])}
+          formData={getByPath(formData, propertyName)}
           handleKeyRename={handleKeyRename}
           handleRemoveProperty={handleRemoveProperty}
           addedByAdditionalProperties={addedByAdditionalProperties}

@@ -10,14 +10,19 @@ import type {
   UiSchema,
 } from '@rjsf/utils';
 import {
+  getByPath,
+  toPath,
   ANY_OF_KEY,
   deepEquals,
   getDiscriminatorFieldFromSchema,
   getTemplate,
   getTestIds,
+  getPropertySchema,
   getUiOptions,
   hashObject,
   ID_KEY,
+  isObject,
+  isPlainObject,
   lookupFromFormContext,
   ONE_OF_KEY,
   PROPERTIES_KEY,
@@ -28,17 +33,6 @@ import {
   ITEMS_KEY,
   useDeepCompareMemo,
 } from '@rjsf/utils';
-import each from 'lodash/each';
-import flatten from 'lodash/flatten';
-import get from 'lodash/get';
-import has from 'lodash/has';
-import includes from 'lodash/includes';
-import intersection from 'lodash/intersection';
-import isEmpty from 'lodash/isEmpty';
-import isObject from 'lodash/isObject';
-import isPlainObject from 'lodash/isPlainObject';
-import last from 'lodash/last';
-import set from 'lodash/set';
 
 /** The enumeration of the three different Layout GridTemplate type values
  */
@@ -162,28 +156,29 @@ export function computeFieldUiSchema<T = any, S extends StrictRJSFSchema = RJSFS
   schemaReadonly?: boolean,
   forceReadonly?: boolean,
 ) {
-  const globalUiOptions = get(uiSchema, [UI_GLOBAL_OPTIONS_KEY], {});
-  const localUiSchema = get(uiSchema, field);
-  const localUiOptions = { ...get(localUiSchema, [UI_OPTIONS_KEY], {}), ...uiProps, ...globalUiOptions };
+  const globalUiOptions = uiSchema?.[UI_GLOBAL_OPTIONS_KEY] ?? {};
+  const localUiSchema = getByPath<UiSchema<T, S, F> | undefined>(uiSchema, toPath(field));
+  const localUiOptions = { ...(localUiSchema?.[UI_OPTIONS_KEY] ?? {}), ...uiProps, ...globalUiOptions };
   const fieldUiSchema = { ...localUiSchema };
-  if (!isEmpty(localUiOptions)) {
-    set(fieldUiSchema, [UI_OPTIONS_KEY], localUiOptions);
+  if (Object.keys(localUiOptions).length > 0) {
+    fieldUiSchema[UI_OPTIONS_KEY] = localUiOptions;
   }
-  if (!isEmpty(globalUiOptions)) {
+  if (Object.keys(globalUiOptions).length > 0) {
     // pass the global uiOptions down to the field uiSchema so that they can be applied to all nested fields
-    set(fieldUiSchema, [UI_GLOBAL_OPTIONS_KEY], globalUiOptions);
+    fieldUiSchema[UI_GLOBAL_OPTIONS_KEY] = globalUiOptions;
   }
   let { readonly: uiReadonly } = getUiOptions<T, S, F>(fieldUiSchema);
   if (forceReadonly === true || (uiReadonly === undefined && schemaReadonly === true)) {
     // If we are forcing all widgets to be readonly, OR the schema indicates it is readonly AND the uiSchema does not
     // have an overriding value, then update the uiSchema to set readonly to true. Doing this will
     uiReadonly = true;
-    if (has(localUiOptions, READONLY_KEY)) {
+    const fieldUiOptions = fieldUiSchema[UI_OPTIONS_KEY];
+    if (fieldUiOptions && READONLY_KEY in fieldUiOptions) {
       // If the local options has the key value provided in it, then set that one to true
-      set(fieldUiSchema, [UI_OPTIONS_KEY, READONLY_KEY], true);
+      fieldUiOptions[READONLY_KEY] = true;
     } else {
       // otherwise set the `ui:` version
-      set(fieldUiSchema, `ui:${READONLY_KEY}`, true);
+      fieldUiSchema[`ui:${READONLY_KEY}`] = true;
     }
   }
   return { fieldUiSchema, uiReadonly };
@@ -208,15 +203,15 @@ export function conditionMatches(
   datum?: unknown,
   value: unknown = '$0m3tH1nG Un3xP3cT3d',
 ): boolean {
-  const data = flatten([datum]).sort();
-  const values = flatten([value]).sort();
+  const data = [datum].flat().sort();
+  const values = [value].flat().sort();
   switch (operator) {
     case Operators.ALL:
       return deepEquals(data, values);
     case Operators.SOME:
-      return intersection(data, values).length > 0;
+      return data.some((entry) => values.includes(entry));
     case Operators.NONE:
-      return intersection(data, values).length === 0;
+      return !data.some((entry) => values.includes(entry));
     default:
       return false;
   }
@@ -281,12 +276,12 @@ export function computeArraySchemasIfPresent<S extends StrictRJSFSchema = RJSFSc
 } {
   let rawSchema: S | undefined;
   let resultPathId = fieldPathId;
-  if (isNumericIndex(potentialIndex) && schema && schema?.type === 'array' && has(schema, ITEMS_KEY)) {
+  if (isNumericIndex(potentialIndex) && schema && schema?.type === 'array' && ITEMS_KEY in schema) {
     const index = Number(potentialIndex);
     const items = schema[ITEMS_KEY];
     if (Array.isArray(items)) {
       if (index > items.length) {
-        rawSchema = last(items) as S;
+        rawSchema = items.at(-1) as S;
       } else {
         rawSchema = items[index] as S;
       }
@@ -344,20 +339,21 @@ export function getSchemaDetailsForField<
   parts.forEach((part) => {
     // dive into the properties of the current schema (when it exists) and get the schema for the next part
     fieldPathId = toFieldPathId(part, globalFormOptions, fieldPathId);
-    if (has(schema, PROPERTIES_KEY)) {
-      rawSchema = get(schema, [PROPERTIES_KEY, part], {}) as S;
-    } else if (schema && (has(schema, ONE_OF_KEY) || has(schema, ANY_OF_KEY))) {
-      const xxx = has(schema, ONE_OF_KEY) ? ONE_OF_KEY : ANY_OF_KEY;
+    const schemaProperties = schema?.[PROPERTIES_KEY];
+    if (schemaProperties) {
+      rawSchema = (schemaProperties[part] ?? {}) as S;
+    } else if (schema && (ONE_OF_KEY in schema || ANY_OF_KEY in schema)) {
+      const xxx = ONE_OF_KEY in schema ? ONE_OF_KEY : ANY_OF_KEY;
       // When the schema represents a oneOf/anyOf, find the selected schema for it and grab the inner part
       const selectedSchema = schemaUtils.findSelectedOptionInXxxOf(schema, part, xxx, innerData);
-      rawSchema = get(selectedSchema, [PROPERTIES_KEY, part], {}) as S;
+      rawSchema = getPropertySchema<S>(selectedSchema, part);
     } else {
       const result = computeArraySchemasIfPresent<S>(schema, fieldPathId, part);
       rawSchema = result.rawSchema ?? ({} as S);
       fieldPathId = result.fieldPathId;
     }
     // Now drill into the innerData for the part, returning an empty object by default if it doesn't exist
-    innerData = get(innerData, part, {}) as T;
+    innerData = getByPath<T>(innerData, part, {} as T);
     // Resolve any `$ref`s for the current rawSchema
     schema = schemaUtils.retrieveSchema(rawSchema, innerData);
     isReadonly = getNonNullishValue(schema.readOnly, isReadonly);
@@ -366,31 +362,31 @@ export function getSchemaDetailsForField<
   let optionsInfo: OneOfOptionsInfoType<S> | undefined;
   let isRequired = false;
   // retrieveSchema will return an empty schema in the worst case scenario, convert it to undefined
-  if (isEmpty(schema)) {
+  if (!schema || Object.keys(schema).length === 0) {
     schema = undefined;
   }
   if (schema && leafPath) {
     // When we have both a schema and a leafPath...
-    if (schema && (has(schema, ONE_OF_KEY) || has(schema, ANY_OF_KEY))) {
-      const xxx = has(schema, ONE_OF_KEY) ? ONE_OF_KEY : ANY_OF_KEY;
+    if (schema && (ONE_OF_KEY in schema || ANY_OF_KEY in schema)) {
+      const xxx = ONE_OF_KEY in schema ? ONE_OF_KEY : ANY_OF_KEY;
       // Grab the selected schema for the oneOf/anyOf value for the leafPath using the innerData
       schema = schemaUtils.findSelectedOptionInXxxOf(schema, leafPath, xxx, innerData);
     }
     fieldPathId = toFieldPathId(leafPath, globalFormOptions, fieldPathId);
-    isRequired = schema !== undefined && Array.isArray(schema.required) && includes(schema.required, leafPath);
+    isRequired = schema !== undefined && Array.isArray(schema.required) && schema.required.includes(leafPath);
     const result = computeArraySchemasIfPresent<S>(schema, fieldPathId, leafPath);
     if (result.rawSchema) {
       schema = result.rawSchema;
       fieldPathId = result.fieldPathId;
     } else {
       // Now grab the schema from the leafPath of the current schema properties
-      schema = get(schema, [PROPERTIES_KEY, leafPath]) as S | undefined;
+      schema = schema?.[PROPERTIES_KEY]?.[leafPath] as S | undefined;
       // Resolve any `$ref`s for the current schema
       schema = schema ? schemaUtils.retrieveSchema(schema) : schema;
     }
     isReadonly = getNonNullishValue(schema?.readOnly, isReadonly);
-    if (schema && (has(schema, ONE_OF_KEY) || has(schema, ANY_OF_KEY))) {
-      const xxx = has(schema, ONE_OF_KEY) ? ONE_OF_KEY : ANY_OF_KEY;
+    if (schema && (ONE_OF_KEY in schema || ANY_OF_KEY in schema)) {
+      const xxx = ONE_OF_KEY in schema ? ONE_OF_KEY : ANY_OF_KEY;
       // Set the options if we have a schema with a oneOf/anyOf
       const discriminator = getDiscriminatorFieldFromSchema(schema);
       optionsInfo = { options: schema[xxx] as S[], hasDiscriminator: !!discriminator };
@@ -413,9 +409,9 @@ export function getCustomRenderComponent<
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any,
 >(render: string | RenderComponent, registry: Registry<T, S, F>): RenderComponent | null {
-  let customRenderer = render;
+  let customRenderer: string | RenderComponent | undefined = render;
   if (typeof customRenderer === 'string') {
-    customRenderer = lookupFromFormContext<T, S, F>(registry, customRenderer);
+    customRenderer = lookupFromFormContext<T, S, F, string | RenderComponent | undefined>(registry, customRenderer);
   }
   if (typeof customRenderer === 'function') {
     return customRenderer;
@@ -446,18 +442,16 @@ export function computeUIComponentPropsFromGridSchema<
     const { name: innerName = '', render, ...innerProps } = gridSchema;
     name = innerName;
     uiProps = innerProps;
-    if (!isEmpty(uiProps)) {
-      // Transform any `$lookup=` in the uiProps props with the appropriate value
-      each(uiProps, (prop: ConfigObject, key: string) => {
-        if (typeof prop === 'string') {
-          const match: string[] | null = LOOKUP_REGEX.exec(prop);
-          if (Array.isArray(match) && match.length > 1) {
-            const lookupName = match[1];
-            uiProps[key] = lookupFromFormContext(registry, lookupName, lookupName);
-          }
+    // Transform any `$lookup=` in the uiProps props with the appropriate value
+    Object.entries(uiProps).forEach(([key, prop]) => {
+      if (typeof prop === 'string') {
+        const match: string[] | null = LOOKUP_REGEX.exec(prop);
+        if (Array.isArray(match) && match.length > 1) {
+          const lookupName = match[1];
+          uiProps[key] = lookupFromFormContext(registry, lookupName, lookupName);
         }
-      });
-    }
+      }
+    });
     UIComponent = getCustomRenderComponent<T, S, F>(render, registry);
     if (!innerName && UIComponent) {
       rendered = <UIComponent {...innerProps} data-testid={LAYOUT_GRID_FIELD_TEST_IDS.uiComponent} />;
@@ -530,7 +524,7 @@ function LayoutGridCondition<T = any, S extends StrictRJSFSchema = RJSFSchema, F
   const { formData, registry } = layoutGridFieldProps;
   const { children, gridProps } = findChildrenAndProps<T, S, F>(layoutGridSchema, GridType.CONDITION, registry);
   const { operator, field = '', value } = gridProps;
-  const fieldData = get(formData, field, null);
+  const fieldData = getByPath(formData, toPath(field), null);
   if (conditionMatches(operator, fieldData, value)) {
     return <LayoutGridFieldChildren {...layoutGridFieldProps} childrenLayoutGridSchemaId={children} />;
   }
@@ -680,6 +674,7 @@ function LayoutGridFieldComponent<T = any, S extends StrictRJSFSchema = RJSFSche
     // the `Form` via the prop passed to `LayoutGridField` we need to make sure the uiSchema always has a true value
     // when it is needed
     const { fieldUiSchema, uiReadonly } = computeFieldUiSchema<T, S, F>(name, uiProps, uiSchema, isReadonly, readonly);
+    const namePath = toPath(name);
 
     return (
       <Field
@@ -694,9 +689,9 @@ function LayoutGridFieldComponent<T = any, S extends StrictRJSFSchema = RJSFSche
         readonly={uiReadonly}
         schema={schema}
         uiSchema={fieldUiSchema}
-        errorSchema={get(errorSchema, name)}
+        errorSchema={getByPath(errorSchema, namePath)}
         fieldPathId={memoFieldPathId}
-        formData={get(formData, name)}
+        formData={getByPath(formData, namePath)}
         onChange={onChange}
         onBlur={onBlur}
         onFocus={onFocus}

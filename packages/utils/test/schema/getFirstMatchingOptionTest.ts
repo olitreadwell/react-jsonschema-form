@@ -1,8 +1,6 @@
-import noop from 'lodash/noop';
-
-import type { RJSFSchema } from '../../src';
-import { createSchemaUtils, getFirstMatchingOption } from '../../src';
-import type { TestValidatorType } from './types';
+import type { RJSFSchema } from '../../src/index.ts';
+import { createSchemaUtils, getFirstMatchingOption, noop } from '../../src/index.ts';
+import type { TestValidatorType } from './types.ts';
 
 export default function getFirstMatchingOptionTest(testValidator: TestValidatorType) {
   describe('getFirstMatchingOption()', () => {
@@ -37,6 +35,10 @@ export default function getFirstMatchingOptionTest(testValidator: TestValidatorT
         },
       ];
       expect(getFirstMatchingOption(testValidator, undefined, options, rootSchema)).toEqual(0);
+    });
+    it('should handle undefined formData when a discriminator field is present in an option', () => {
+      const options: RJSFSchema[] = [{ type: 'object', properties: { id: { const: 'a' } } }];
+      expect(getFirstMatchingOption(testValidator, undefined, options, rootSchema, 'id')).toEqual(0);
     });
     it('should infer correct anyOf schema with properties also having anyOf/allOf', () => {
       // Mock isValid to iterate through both options by failing the first

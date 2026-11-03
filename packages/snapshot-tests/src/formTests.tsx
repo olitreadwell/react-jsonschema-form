@@ -451,6 +451,38 @@ export function formTests(Form: ComponentType<FormProps>) {
       expect(asFragment()).toMatchSnapshot();
     });
 
+    test('required checkbox field', () => {
+      const schema: RJSFSchema = {
+        type: 'object',
+        required: ['agree'],
+        properties: {
+          agree: {
+            type: 'boolean',
+            title: 'I Agree',
+          },
+        },
+      };
+      const { asFragment, container } = render(<Form schema={schema} validator={validator} />);
+      expect(container.querySelector('input[type="checkbox"]')?.hasAttribute('required')).toBe(false);
+      expect(asFragment()).toMatchSnapshot();
+    });
+
+    test('required checkbox field, default true', () => {
+      const schema: RJSFSchema = {
+        type: 'object',
+        required: ['agree'],
+        properties: {
+          agree: {
+            type: 'boolean',
+            title: 'I Agree',
+            default: true,
+          },
+        },
+      };
+      const { asFragment } = render(<Form schema={schema} validator={validator} />);
+      expect(asFragment()).toMatchSnapshot();
+    });
+
     test('checkbox field with description in schema and FieldTemplate', async () => {
       const schema: RJSFSchema = {
         type: 'boolean',
@@ -1276,5 +1308,34 @@ export function formTests(Form: ComponentType<FormProps>) {
         expect(asFragment()).toMatchSnapshot();
       });
     });
+  });
+
+  test('string field with autocapitalize', () => {
+    const schema: RJSFSchema = {
+      type: 'string',
+    };
+    const uiSchema: UiSchema = {
+      'ui:autocapitalize': 'words',
+    };
+    const { asFragment } = render(<Form schema={schema} validator={validator} uiSchema={uiSchema} />);
+    expect(asFragment()).toMatchSnapshot();
+  });
+
+  // This test deliberately lives at the end of the file: it adds one more render, which shifts
+  // the auto-generated ids some themes use and would otherwise churn their snapshots.
+  test('required checkbox field that only allows true keeps the required attribute', () => {
+    const schema: RJSFSchema = {
+      type: 'object',
+      required: ['agree'],
+      properties: {
+        agree: {
+          type: 'boolean',
+          title: 'I Agree',
+          const: true,
+        },
+      },
+    };
+    const { container } = render(<Form schema={schema} validator={validator} />);
+    expect(container.querySelector('input[type="checkbox"]')?.hasAttribute('required')).toBe(true);
   });
 }

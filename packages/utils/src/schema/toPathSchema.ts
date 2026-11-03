@@ -1,7 +1,4 @@
 // oxlint-disable typescript/no-deprecated
-import get from 'lodash/get';
-import isObject from 'lodash/isObject';
-import set from 'lodash/set';
 
 import {
   ADDITIONAL_PROPERTIES_KEY,
@@ -15,9 +12,12 @@ import {
   PROPERTIES_KEY,
   REF_KEY,
   RJSF_ADDITIONAL_PROPERTIES_FLAG,
-} from '../constants';
-import deepEquals from '../deepEquals';
-import getDiscriminatorFieldFromSchema from '../getDiscriminatorFieldFromSchema';
+} from '../constants.ts';
+import deepEquals from '../deepEquals.ts';
+import getDiscriminatorFieldFromSchema from '../getDiscriminatorFieldFromSchema.ts';
+import getPropertySchema from '../getPropertySchema.ts';
+import isObject from '../isObject.ts';
+import { getByPath, setByPath } from '../pathUtils.ts';
 import type {
   Experimental_CustomMergeAllOf,
   FormContextType,
@@ -26,9 +26,9 @@ import type {
   RJSFSchema,
   StrictRJSFSchema,
   ValidatorType,
-} from '../types';
-import getClosestMatchingOption from './getClosestMatchingOption';
-import retrieveSchema from './retrieveSchema';
+} from '../types.ts';
+import getClosestMatchingOption from './getClosestMatchingOption.ts';
+import retrieveSchema from './retrieveSchema.ts';
 
 /** An internal helper that generates an `PathSchema` object for the `schema`, recursively with protection against
  * infinite recursion
@@ -99,11 +99,11 @@ function toPathSchemaInternal<T = any, S extends StrictRJSFSchema = RJSFSchema, 
   }
 
   if (ADDITIONAL_PROPERTIES_KEY in schema && schema[ADDITIONAL_PROPERTIES_KEY] !== false) {
-    set(pathSchema, RJSF_ADDITIONAL_PROPERTIES_FLAG, true);
+    setByPath(pathSchema, RJSF_ADDITIONAL_PROPERTIES_FLAG, true);
     const additionalSchema = (
       isObject(schema[ADDITIONAL_PROPERTIES_KEY]) ? schema[ADDITIONAL_PROPERTIES_KEY] : {}
     ) as S;
-    const definedProperties = get(schema, PROPERTIES_KEY, {});
+    const definedProperties = schema[PROPERTIES_KEY] ?? {};
     for (const key of Object.keys((formData ?? {}) as GenericObjectType)) {
       if (!(key in definedProperties)) {
         (pathSchema as PathSchema<GenericObjectType>)[key] = toPathSchemaInternal<T, S, F>(
@@ -111,7 +111,7 @@ function toPathSchemaInternal<T = any, S extends StrictRJSFSchema = RJSFSchema, 
           additionalSchema,
           `${name}.${key}`,
           rootSchema,
-          get(formData, [key]),
+          getByPath<T>(formData, key),
           _recurseList,
           experimental_customMergeAllOf,
         );
@@ -166,7 +166,7 @@ function toPathSchemaInternal<T = any, S extends StrictRJSFSchema = RJSFSchema, 
     // This is a deprecated function that is no longer used by RJSF
     // oxlint-disable-next-line guard-for-in
     for (const property in schema.properties) {
-      const field: S = get(schema, [PROPERTIES_KEY, property], {}) as S;
+      const field = getPropertySchema<S>(schema, property);
       (pathSchema as PathSchema<GenericObjectType>)[property] = toPathSchemaInternal<T, S, F>(
         validator,
         field,
@@ -174,7 +174,7 @@ function toPathSchemaInternal<T = any, S extends StrictRJSFSchema = RJSFSchema, 
         rootSchema,
         // It's possible that formData is not an object -- this can happen if an
         // array item has just been added, but not populated with data yet
-        get(formData, [property]),
+        getByPath<T>(formData, property),
         _recurseList,
         experimental_customMergeAllOf,
       );

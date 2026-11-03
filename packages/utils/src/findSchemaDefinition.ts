@@ -1,8 +1,5 @@
 import UriResolver from 'fast-uri';
 import jsonpointer from 'jsonpointer';
-import get from 'lodash/get';
-import isEmpty from 'lodash/isEmpty';
-import isObject from 'lodash/isObject';
 
 import {
   ALL_OF_KEY,
@@ -11,8 +8,9 @@ import {
   JSON_SCHEMA_DRAFT_2020_12,
   REF_KEY,
   SCHEMA_KEY,
-} from './constants';
-import type { GenericObjectType, RJSFSchema, StrictRJSFSchema } from './types';
+} from './constants.ts';
+import isObject from './isObject.ts';
+import type { GenericObjectType, RJSFSchema, StrictRJSFSchema } from './types.ts';
 
 /** Looks for the `$id` pointed by `ref` in the schema definitions embedded in
  * a JSON Schema bundle
@@ -51,7 +49,7 @@ function findEmbeddedSchemaRecursive<S extends StrictRJSFSchema = RJSFSchema>(sc
  * @param baseURI - The base URI to be used for resolving relative references
  */
 export function makeAllReferencesAbsolute<S extends StrictRJSFSchema = RJSFSchema>(schema: S, baseURI: string): S {
-  const currentURI = get(schema, ID_KEY, baseURI);
+  const currentURI = schema[ID_KEY] ?? baseURI;
   let result = schema;
   // Make all other references absolute
   if (REF_KEY in result) {
@@ -80,8 +78,7 @@ export function makeAllReferencesAbsolute<S extends StrictRJSFSchema = RJSFSchem
  *      value from `object[key]`
  */
 export function splitKeyElementFromObject(key: string, object: GenericObjectType) {
-  const value = object[key];
-  const { [key]: removed, ...remaining } = object;
+  const { [key]: value, ...remaining } = object;
   return [remaining, value];
 }
 
@@ -101,7 +98,7 @@ export function findSchemaDefinitionRecursive<S extends StrictRJSFSchema = RJSFS
   $ref?: string,
   rootSchema: S = {} as S,
   recurseList: string[] = [],
-  baseURI: string | undefined = get(rootSchema, [ID_KEY]),
+  baseURI: string | undefined = rootSchema[ID_KEY],
 ): S {
   const ref = $ref || '';
   let current: S | undefined = undefined;
@@ -123,7 +120,7 @@ export function findSchemaDefinitionRecursive<S extends StrictRJSFSchema = RJSFS
     current = findEmbeddedSchemaRecursive<S>(rootSchema, refId.replace(/\/$/, ''));
     if (current !== undefined) {
       currentBaseURI = current[ID_KEY];
-      if (!isEmpty(refAnchor)) {
+      if (refAnchor.length > 0) {
         current = jsonpointer.get(current, decodeURIComponent(refAnchor.join('#')));
       }
     }
@@ -172,7 +169,7 @@ export function findSchemaDefinitionRecursive<S extends StrictRJSFSchema = RJSFS
 export default function findSchemaDefinition<S extends StrictRJSFSchema = RJSFSchema>(
   $ref?: string,
   rootSchema: S = {} as S,
-  baseURI: string | undefined = get(rootSchema, [ID_KEY]),
+  baseURI: string | undefined = rootSchema[ID_KEY],
 ): S {
   const recurseList: string[] = [];
   return findSchemaDefinitionRecursive($ref, rootSchema, recurseList, baseURI);

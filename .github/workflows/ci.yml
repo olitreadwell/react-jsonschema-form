@@ -26,6 +26,9 @@ jobs:
           cache-dependency-path: 'pnpm-lock.yaml'
       - run: pnpm install --frozen-lockfile
       - run: pnpm run lint
+      # Workspace-wide and independent of the Node version, so run it once.
+      - if: matrix.node-version == '22.x'
+        run: pnpm run knip
 
       - name: Build with Netlify badge
         run: pnpm run build-serial
@@ -37,6 +40,8 @@ jobs:
         run: pnpm run build-serial
         env:
           NODE_OPTIONS: --max_old_space_size=4096
+
+      - run: pnpm run typecheck
 
       - if: matrix.node-version == '22.x'
         uses: actions/upload-artifact@v7

@@ -7,10 +7,10 @@ import type { RJSFSchema, UiSchema, ValidatorType } from '@rjsf/utils';
 import { DEFAULT_ID_PREFIX, DEFAULT_ID_SEPARATOR } from '@rjsf/utils';
 import localValidator from '@rjsf/validator-ajv8';
 
-import base64 from '../utils/base64';
-import CopyLink from './CopyLink';
-import RawValidatorTest from './RawValidatorTest';
-import ValidatorSelector from './ValidatorSelector';
+import base64 from '../utils/base64.ts';
+import CopyLink from './CopyLink.tsx';
+import RawValidatorTest from './RawValidatorTest.tsx';
+import ValidatorSelector from './ValidatorSelector.tsx';
 
 export const DRAWER_WIDTH = '28rem';
 
@@ -216,6 +216,23 @@ const liveSettingsBooleanSchema: RJSFSchema = {
               type: 'string',
               title: 'Outermost (ancestor) default value wins',
               enum: ['ancestorWins'],
+            },
+          ],
+        },
+        requiredBooleanDefault: {
+          type: 'string',
+          title: 'Required boolean default',
+          default: 'populateFalse',
+          oneOf: [
+            {
+              type: 'string',
+              title: 'A required boolean with no default is set to false',
+              enum: ['populateFalse'],
+            },
+            {
+              type: 'string',
+              title: 'A required boolean with no default stays undefined until answered',
+              enum: ['skip'],
             },
           ],
         },

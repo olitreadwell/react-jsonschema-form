@@ -1,16 +1,15 @@
 import { createRef } from 'react';
-import type { RJSFSchema, UiSchema } from '@rjsf/utils';
+import type { RJSFSchema, UiSchema, WidgetProps } from '@rjsf/utils';
 import { act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import isEmpty from 'lodash/isEmpty';
 
-import type Form from '../src';
+import type Form from '../src/index.ts';
 import {
   createFormComponent,
   expectToHaveBeenCalledWithFormData,
   getSelectedOptionValue,
   submitForm,
-} from './testUtils';
+} from './testUtils.tsx';
 
 const user = userEvent.setup();
 
@@ -81,6 +80,18 @@ describe('NumberField', () => {
 
       expect(node.querySelector('input')).toHaveAttribute('max', '100');
     });
+
+    it('should handle the allowClearTextInputs clear button the same as an empty string change event, not storing "" in a number slot', async () => {
+      const { node, onChange } = createFormComponent({
+        schema: { type: 'number' },
+        uiSchema: { 'ui:allowClearTextInputs': true },
+        formData: 3,
+      });
+
+      await user.click(node.querySelector('button.btn-clear')!);
+
+      expectToHaveBeenCalledWithFormData(onChange, undefined, 'root');
+    });
   });
   describe('Number and text widget', () => {
     const uiSchemas: UiSchema[] = [
@@ -92,6 +103,8 @@ describe('NumberField', () => {
       },
     ];
     for (const uiSchema of uiSchemas) {
+      // an empty uiSchema renders a native number input, so the widget yields numbers rather than strings
+      const isNumberInput = Object.keys(uiSchema).length === 0;
       it('should render a string field with a label', () => {
         const { node } = createFormComponent({
           schema: {
@@ -258,7 +271,7 @@ describe('NumberField', () => {
             expectToHaveBeenCalledWithFormData(onChange, test.output, 'root');
             // "2." is not really a valid number in a input field of type number
             // so we need to use getAttribute("value") instead since .value outputs the empty string
-            expect($input).toHaveValue(isEmpty(uiSchema) ? test.output : test.input);
+            expect($input).toHaveValue(isNumberInput ? test.output : test.input);
           });
         });
       });
@@ -276,7 +289,7 @@ describe('NumberField', () => {
         await user.type($input!, '.00');
 
         expectToHaveBeenCalledWithFormData(onChange, 0, 'root');
-        const expected = isEmpty(uiSchema) ? 0 : '.00';
+        const expected = isNumberInput ? 0 : '.00';
         expect($input).toHaveValue(expected);
       });
 
@@ -319,14 +332,14 @@ describe('NumberField', () => {
 
         await user.type($input!, '231', { initialSelectionStart: 0, initialSelectionEnd: 1 });
 
-        expect($input).toHaveValue(isEmpty(uiSchema) ? 231 : '231');
+        expect($input).toHaveValue(isNumberInput ? 231 : '231');
         expectToHaveBeenCalledWithFormData(onChange, 231, 'root');
 
         act(() => {
           ref.current?.reset();
         });
 
-        expect($input).toHaveValue(isEmpty(uiSchema) ? 1 : '1');
+        expect($input).toHaveValue(isNumberInput ? 1 : '1');
         // No id on programmatic change
         expectToHaveBeenCalledWithFormData(onChange, 1);
       });
@@ -349,10 +362,9 @@ describe('NumberField', () => {
           },
           uiSchema,
         });
-        const isNumber = isEmpty(uiSchema);
         await user.type(node.querySelector('input')!, '2.');
 
-        if (isNumber) {
+        if (isNumberInput) {
           // "2." is not really a valid number in a input field of type number
           // so we need to use getAttribute("value") instead since .value outputs the empty string
           expect(node.querySelector('.rjsf-field input')).toHaveValue(2);
@@ -361,21 +373,21 @@ describe('NumberField', () => {
         }
 
         await user.type(node.querySelector('input')!, '0');
-        if (isNumber) {
+        if (isNumberInput) {
           expect(node.querySelector('.rjsf-field input')).toHaveValue(2.0);
         } else {
           expect(node.querySelector('.rjsf-field input')).toHaveValue('2.0');
         }
 
         await user.type(node.querySelector('input')!, '0');
-        if (isNumber) {
+        if (isNumberInput) {
           expect(node.querySelector('.rjsf-field input')).toHaveValue(2.0);
         } else {
           expect(node.querySelector('.rjsf-field input')).toHaveValue('2.00');
         }
 
         await user.type(node.querySelector('input')!, '0');
-        if (isNumber) {
+        if (isNumberInput) {
           expect(node.querySelector('.rjsf-field input')).toHaveValue(2.0);
         } else {
           expect(node.querySelector('.rjsf-field input')).toHaveValue('2.000');
@@ -391,7 +403,7 @@ describe('NumberField', () => {
         });
 
         await user.type(node.querySelector('input')!, '0');
-        const expected = isEmpty(uiSchema) ? 0 : '0';
+        const expected = isNumberInput ? 0 : '0';
         expect(node.querySelector('.rjsf-field input')).toHaveValue(expected);
       });
 
@@ -604,6 +616,37 @@ describe('NumberField', () => {
       expect(node.querySelector('.rjsf-field input')).toHaveAttribute('value', '2,3');
     });
 
+    it('should render a text input by default when the locale decimal separator is not "."', () => {
+      const { node } = createFormComponent({
+        schema: {
+          type: 'number',
+        },
+      });
+
+      expect(node.querySelector('.rjsf-field input')).toHaveAttribute('type', 'text');
+    });
+
+    it('should not comma-format the display value when an explicit inputType overrides the resolved text widget', () => {
+      const { node } = createFormComponent({
+        schema: {
+          type: 'number',
+        },
+        uiSchema: {
+          'ui:options': {
+            inputType: 'number',
+          },
+        },
+        formData: 2.3,
+      });
+
+      // getInputProps() gives the explicit inputType priority over the locale detection, so
+      // this renders a native <input type="number">, which rejects/blanks a comma-formatted
+      // value like "2,3". The display value must stay dot-formatted to match.
+      const $input = node.querySelector('.rjsf-field input')!;
+      expect($input).toHaveAttribute('type', 'number');
+      expect($input).toHaveValue(2.3);
+    });
+
     it('should handle a change event using comma decimal separator', async () => {
       const { node, onChange } = createFormComponent({
         schema: {
@@ -613,6 +656,18 @@ describe('NumberField', () => {
           'ui:options': {
             inputType: 'text',
           },
+        },
+      });
+
+      await user.type(node.querySelector('input')!, '2,5');
+
+      expectToHaveBeenCalledWithFormData(onChange, 2.5, 'root');
+    });
+
+    it('should handle a change event using comma decimal separator with the default input', async () => {
+      const { node, onChange } = createFormComponent({
+        schema: {
+          type: 'number',
         },
       });
 
@@ -642,6 +697,65 @@ describe('NumberField', () => {
 
       await user.type($input, '0');
       expect($input).toHaveValue('2,00');
+    });
+
+    it('should preserve a typed "." as a pending decimal point instead of snapping to the locale separator', async () => {
+      const { node } = createFormComponent({
+        schema: {
+          type: 'number',
+        },
+      });
+
+      const $input = node.querySelector('input')!;
+      await user.type($input, '2.');
+      expect($input).toHaveValue('2.');
+
+      await user.type($input, '0');
+      expect($input).toHaveValue('2.0');
+
+      await user.type($input, '0');
+      expect($input).toHaveValue('2.00');
+    });
+
+    it('should commit the correct numeric value when "." is typed instead of the locale separator', async () => {
+      const { node, onChange } = createFormComponent({
+        schema: {
+          type: 'number',
+        },
+      });
+
+      await user.type(node.querySelector('input')!, '2.1');
+
+      expectToHaveBeenCalledWithFormData(onChange, 2.1, 'root');
+    });
+
+    it('should not treat a stale cached input containing "." as a wildcard match for an unrelated value', async () => {
+      const schema: RJSFSchema = {
+        type: 'number',
+      };
+      const uiSchema: UiSchema = {
+        'ui:options': {
+          inputType: 'text',
+        },
+      };
+
+      const { rerender, node } = createFormComponent({
+        ref: createRef(),
+        schema,
+        uiSchema,
+      });
+
+      const $input = node.querySelector('input')!;
+      // Poison the component's cached "last typed value" with a string that isn't a number
+      // but shares every character with '2.5' except the position where '.' would be.
+      await user.type($input, '2x5');
+
+      // An unrelated, externally-provided value comes in (e.g. a programmatic reset).
+      rerender({ schema, formData: 2.5 });
+
+      // A regex built from '2.5' without escaping the '.' treats it as "any character" and
+      // wrongly matches the stale '2x5', redisplaying garbage instead of the locale-formatted number.
+      expect($input).toHaveValue('2,5');
     });
 
     it('should normalize values beginning with a comma', async () => {
@@ -706,6 +820,52 @@ describe('NumberField', () => {
 
       const input = node.querySelector<HTMLInputElement>('input[type="hidden"]')!;
       expect(input).toHaveAttribute('value', '2.3');
+    });
+
+    it('should pass a number, not a string, to a custom widget', () => {
+      let receivedValue: unknown;
+      const CustomWidget = (props: WidgetProps) => {
+        receivedValue = props.value;
+        return <div id='custom-widget' />;
+      };
+
+      const { node } = createFormComponent({
+        schema: {
+          type: 'number',
+        },
+        uiSchema: {
+          'ui:widget': 'custom',
+        },
+        widgets: {
+          custom: CustomWidget,
+        },
+        formData: 2.3,
+      });
+
+      expect(node.querySelector('#custom-widget')).toBeInTheDocument();
+      expect(receivedValue).toBe(2.3);
+    });
+
+    it('should pass a number, not a string, to a format-registered widget', () => {
+      let receivedValue: unknown;
+      const CustomFormatWidget = (props: WidgetProps) => {
+        receivedValue = props.value;
+        return <div id='custom-format-widget' />;
+      };
+
+      const { node } = createFormComponent({
+        schema: {
+          type: 'number',
+          format: 'custom-format',
+        },
+        widgets: {
+          'custom-format': CustomFormatWidget,
+        },
+        formData: 2.3,
+      });
+
+      expect(node.querySelector('#custom-format-widget')).toBeInTheDocument();
+      expect(receivedValue).toBe(2.3);
     });
   });
 });

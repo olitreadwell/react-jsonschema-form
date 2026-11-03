@@ -1,9 +1,7 @@
-import get from 'lodash/get';
-import has from 'lodash/has';
-
-import { PROPERTIES_KEY } from '../constants';
-import getOptionMatchingSimpleDiscriminator from '../getOptionMatchingSimpleDiscriminator';
-import type { FormContextType, RJSFSchema, StrictRJSFSchema, ValidatorType } from '../types';
+import { PROPERTIES_KEY } from '../constants.ts';
+import getOptionMatchingSimpleDiscriminator from '../getOptionMatchingSimpleDiscriminator.ts';
+import { getByPath } from '../pathUtils.ts';
+import type { FormContextType, RJSFSchema, StrictRJSFSchema, ValidatorType } from '../types.ts';
 
 /** Given the `formData` and list of `options`, attempts to find the index of the first option that matches the data.
  * Always returns the first option if there is nothing that matches.
@@ -42,9 +40,11 @@ export default function getFirstMatchingOption<
     const option = options[i];
 
     // If we have a discriminator field, then we will use this to make the determination
-    if (discriminatorField && has(option, [PROPERTIES_KEY, discriminatorField])) {
-      const value = get(formData, discriminatorField);
-      const discriminator: S = get(option, [PROPERTIES_KEY, discriminatorField], {}) as S;
+    const discriminator = discriminatorField
+      ? (option[PROPERTIES_KEY]?.[discriminatorField] as S | undefined)
+      : undefined;
+    if (discriminatorField && discriminator !== undefined) {
+      const value = getByPath<T>(formData, discriminatorField);
       if (validator.isValid(discriminator, value, rootSchema)) {
         return i;
       }

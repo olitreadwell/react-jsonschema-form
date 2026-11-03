@@ -1,21 +1,18 @@
-import get from 'lodash/get';
-import has from 'lodash/has';
-import isObject from 'lodash/isObject';
-import times from 'lodash/times';
-
-import { ONE_OF_KEY, REF_KEY, JUNK_OPTION_ID, ANY_OF_KEY } from '../constants';
-import getDiscriminatorFieldFromSchema from '../getDiscriminatorFieldFromSchema';
-import getOptionMatchingSimpleDiscriminator from '../getOptionMatchingSimpleDiscriminator';
-import guessType from '../guessType';
+import { ONE_OF_KEY, REF_KEY, JUNK_OPTION_ID, ANY_OF_KEY } from '../constants.ts';
+import getDiscriminatorFieldFromSchema from '../getDiscriminatorFieldFromSchema.ts';
+import getOptionMatchingSimpleDiscriminator from '../getOptionMatchingSimpleDiscriminator.ts';
+import guessType from '../guessType.ts';
+import isObject from '../isObject.ts';
+import { getByPath, hasByPath } from '../pathUtils.ts';
 import type {
   Experimental_CustomMergeAllOf,
   FormContextType,
   RJSFSchema,
   StrictRJSFSchema,
   ValidatorType,
-} from '../types';
-import getFirstMatchingOption from './getFirstMatchingOption';
-import retrieveSchema, { resolveAllReferences } from './retrieveSchema';
+} from '../types.ts';
+import getFirstMatchingOption from './getFirstMatchingOption.ts';
+import retrieveSchema, { resolveAllReferences } from './retrieveSchema.ts';
 
 /** A junk option used to determine when the getFirstMatchingOption call really matches an option rather than returning
  * the first item
@@ -62,11 +59,11 @@ export function calculateIndexScore<T = any, S extends StrictRJSFSchema = RJSFSc
   if (schema) {
     if (isObject(schema.properties)) {
       totalScore += Object.entries(schema.properties).reduce((score, [key, value]) => {
-        const formValue = get(formData, key);
+        const formValue = formData?.[key];
         if (typeof value === 'boolean') {
           return score;
         }
-        if (has(value, REF_KEY)) {
+        if (hasByPath(value, REF_KEY)) {
           const newSchema = retrieveSchema<T, S, F>(
             validator,
             value as S,
@@ -85,8 +82,8 @@ export function calculateIndexScore<T = any, S extends StrictRJSFSchema = RJSFSc
             )
           );
         }
-        if ((has(value, ONE_OF_KEY) || has(value, ANY_OF_KEY)) && formValue) {
-          const xxxOfKey = has(value, ONE_OF_KEY) ? ONE_OF_KEY : ANY_OF_KEY;
+        if ((hasByPath(value, ONE_OF_KEY) || hasByPath(value, ANY_OF_KEY)) && formValue) {
+          const xxxOfKey = hasByPath(value, ONE_OF_KEY) ? ONE_OF_KEY : ANY_OF_KEY;
           const discriminator = getDiscriminatorFieldFromSchema<S>(value as S);
           return (
             score +
@@ -94,7 +91,7 @@ export function calculateIndexScore<T = any, S extends StrictRJSFSchema = RJSFSc
               validator,
               rootSchema,
               formValue,
-              get(value, xxxOfKey) as S[],
+              getByPath<S[]>(value, xxxOfKey),
               -1,
               discriminator,
               experimental_customMergeAllOf,
@@ -103,7 +100,7 @@ export function calculateIndexScore<T = any, S extends StrictRJSFSchema = RJSFSc
         }
         if (value.type === 'object') {
           // If the structure is matching then give it a little boost in score
-          const structureBoost = isObject(formValue) ? 1 : 0;
+          const structureBoost = typeof formValue === 'object' && formValue !== null ? 1 : 0;
           return (
             score +
             structureBoost +
@@ -195,7 +192,7 @@ export default function getClosestMatchingOption<
   }
   if (!allValidIndexes.length) {
     // No indexes were valid, so we'll score all the options, add all the indexes
-    times(resolvedOptions.length, (i) => allValidIndexes.push(i));
+    allValidIndexes.push(...resolvedOptions.keys());
   }
   interface BestType {
     bestIndex: number;

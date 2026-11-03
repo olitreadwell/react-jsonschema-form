@@ -2,16 +2,16 @@ import type { FocusEvent } from 'react';
 import type { FormContextType, RJSFSchema, StrictRJSFSchema, WidgetProps } from '@rjsf/utils';
 import {
   ariaDescribedByIds,
+  enumOptionSelectedValue,
   enumOptionValueDecoder,
   enumOptionValueEncoder,
-  enumOptionsIsSelected,
   getOptionValueFormat,
   optionId,
 } from '@rjsf/utils';
 
-import { Label } from '../components/ui/label';
-import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
-import { cn } from '../lib/utils';
+import { Label } from '../components/ui/label.tsx';
+import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group.tsx';
+import { cn } from '../lib/utils.ts';
 
 /** The `RadioWidget` is a widget for rendering a radio group.
  *  It is typically used with a string property constrained with enum options.
@@ -41,11 +41,12 @@ export default function RadioWidget<T = any, S extends StrictRJSFSchema = RJSFSc
     onFocus(id, enumOptionValueDecoder<S>(target?.value, enumOptions, optionValueFormat, emptyValue));
 
   const inline = Boolean(options?.inline);
+  const selectValue = enumOptionSelectedValue<S>(value, enumOptions, false, optionValueFormat, '');
 
   return (
     <div className='mb-0'>
       <RadioGroup
-        defaultValue={value?.toString()}
+        value={selectValue}
         required={required}
         disabled={disabled || readonly}
         onValueChange={(e: string) => {
@@ -60,11 +61,9 @@ export default function RadioWidget<T = any, S extends StrictRJSFSchema = RJSFSc
         {Array.isArray(enumOptions) &&
           enumOptions.map((option, index) => {
             const itemDisabled = Array.isArray(enumDisabled) && enumDisabled.includes(option.value);
-            const checked = enumOptionsIsSelected<S>(option.value, value);
             return (
               <div className='flex items-center gap-2' key={optionId(id, index)}>
                 <RadioGroupItem
-                  checked={checked}
                   value={enumOptionValueEncoder(option.value, index, optionValueFormat)}
                   id={optionId(id, index)}
                   disabled={itemDisabled}

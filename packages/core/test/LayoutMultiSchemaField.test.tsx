@@ -11,6 +11,7 @@ import {
   DEFAULT_KEY,
   DEFINITIONS_KEY,
   ERRORS_KEY,
+  getByPath,
   ErrorSchemaBuilder,
   getDiscriminatorFieldFromSchema,
   ID_KEY,
@@ -22,17 +23,16 @@ import {
 } from '@rjsf/utils';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { get } from 'lodash';
 
 import LayoutMultiSchemaField, {
   computeEnumOptions,
   getSelectedOption,
-} from '../src/components/fields/LayoutMultiSchemaField';
-import RadioWidget from '../src/components/widgets/RadioWidget';
-import SelectWidget from '../src/components/widgets/SelectWidget';
-import getTestRegistry from '../src/getTestRegistry';
-import { SIMPLE_ONEOF, SIMPLE_ONEOF_OPTIONS } from './testData/layoutData';
-import { setupConsoleErrorSuppression } from './testUtils';
+} from '../src/components/fields/LayoutMultiSchemaField.tsx';
+import RadioWidget from '../src/components/widgets/RadioWidget.tsx';
+import SelectWidget from '../src/components/widgets/SelectWidget.tsx';
+import getTestRegistry from '../src/getTestRegistry.tsx';
+import { SIMPLE_ONEOF, SIMPLE_ONEOF_OPTIONS } from './testData/layoutData.ts';
+import { setupConsoleErrorSuppression } from './testUtils.tsx';
 
 vi.mock('@rjsf/utils', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -210,7 +210,10 @@ describe('LayoutMultiSchemaField', () => {
       registry: getTestRegistry(
         schema,
         {},
-        { FieldErrorTemplate: FakeFieldErrorTemplate, FieldTemplate: FakeFieldTemplate },
+        {
+          FieldErrorTemplate: FakeFieldErrorTemplate,
+          FieldTemplate: FakeFieldTemplate,
+        },
         { SelectWidget: WrappedSelectWidget, RadioWidget: WrappedRadioWidget },
       ),
       schema,
@@ -298,7 +301,10 @@ describe('LayoutMultiSchemaField', () => {
       schema: oneOfSchema as RJSFSchema,
       formData: oneOfData,
       uiSchema: {
-        [UI_OPTIONS_KEY]: { optionsSchemaSelector: selectorField, title: 'Test Title' },
+        [UI_OPTIONS_KEY]: {
+          optionsSchemaSelector: selectorField,
+          title: 'Test Title',
+        },
         [UI_WIDGET_KEY]: 'select',
       },
       errorSchema: NESTED_ERROR_SCHEMA,
@@ -319,7 +325,7 @@ describe('LayoutMultiSchemaField', () => {
 
     // Renders the FakeFieldErrorTemplate with correct text
     const fakeFieldErrorTemplate = screen.getByTestId(FIELD_ERROR_TEST_ID);
-    expect(fakeFieldErrorTemplate).toHaveTextContent(get(props.errorSchema, [ERRORS_KEY])!.join(''));
+    expect(fakeFieldErrorTemplate).toHaveTextContent(getByPath<string[]>(props.errorSchema, [ERRORS_KEY]).join(''));
 
     await user.click(button);
     // Verify the focus function was called
@@ -376,7 +382,12 @@ describe('LayoutMultiSchemaField', () => {
       schema: oneOfSchema as RJSFSchema,
       formData: oneOfData,
       errorSchema: NESTED_ERROR_SCHEMA,
-      uiSchema: { [UI_OPTIONS_KEY]: { optionsSchemaSelector: selectorField, hideError: false } },
+      uiSchema: {
+        [UI_OPTIONS_KEY]: {
+          optionsSchemaSelector: selectorField,
+          hideError: false,
+        },
+      },
       hideError: true,
     });
     render(<LayoutMultiSchemaField {...props} />);
@@ -400,7 +411,7 @@ describe('LayoutMultiSchemaField', () => {
     // Renders the FakeFieldErrorTemplate because 'ui:hideError' takes precedence over props.hideError
     const fakeFieldErrorTemplate = screen.queryByTestId(FIELD_ERROR_TEST_ID);
     expect(fakeFieldErrorTemplate).toBeInTheDocument();
-    expect(fakeFieldErrorTemplate).toHaveTextContent(get(props.errorSchema, [ERRORS_KEY])!.join(''));
+    expect(fakeFieldErrorTemplate).toHaveTextContent(getByPath<string[]>(props.errorSchema, [ERRORS_KEY]).join(''));
 
     await user.click(button);
 
@@ -424,8 +435,52 @@ describe('LayoutMultiSchemaField', () => {
     // OnChange was called with the correct event
     expect(props.onChange).toHaveBeenCalledWith(undefined, props.fieldPathId.path, undefined, DEFAULT_ID);
   });
+  test("replaces the old option's defaults when switching options", async () => {
+    // This field picks `oldOption` out of `formData` by its selector value rather than from a selected index, and
+    // writes the selector back after the defaults are filled in, so it exercises the switch differently than
+    // `MultiSchemaField` does
+    const optionFor = (answer: string): RJSFSchema => ({
+      title: `Choice ${answer}`,
+      type: 'object',
+      properties: {
+        answer: { type: 'string', default: answer, readOnly: true },
+        runner: {
+          type: 'object',
+          default: { name: `runner-${answer}` },
+          properties: { name: { type: 'string' }, ratio: { type: 'number', default: 0 } },
+        },
+      },
+    });
+    const schema: RJSFSchema = {
+      title: 'Simple',
+      type: 'object',
+      discriminator: { propertyName: 'answer' },
+      oneOf: [optionFor('1'), optionFor('2')],
+    };
+    const props = getProps({
+      schema,
+      options: schema[ONE_OF_KEY],
+      formData: { answer: '1', runner: { name: 'runner-1', ratio: 0 } },
+    });
+
+    render(<LayoutMultiSchemaField {...props} />);
+
+    const radios = within(screen.getByTestId(SelectWidgetTestId)).getAllByRole('radio');
+    await user.click(radios[1]);
+
+    expect(props.onChange).toHaveBeenCalledWith(
+      { answer: '2', runner: { name: 'runner-2', ratio: 0 } },
+      props.fieldPathId.path,
+      undefined,
+      DEFAULT_ID,
+    );
+  });
   test('no options for radio widget, ui:hideError true, props.hideError false, no errors to hide', () => {
-    const props = getProps({ options: [], uiSchema: { 'ui:hideError': true }, hideError: false });
+    const props = getProps({
+      options: [],
+      uiSchema: { 'ui:hideError': true },
+      hideError: false,
+    });
     render(<LayoutMultiSchemaField {...props} />);
 
     // Renders a form control
@@ -447,7 +502,12 @@ describe('LayoutMultiSchemaField', () => {
     const props = getProps({
       schema: oneOfSchema as RJSFSchema,
       options: [],
-      uiSchema: { [UI_OPTIONS_KEY]: { optionsSchemaSelector: selectorField, hideError: false } },
+      uiSchema: {
+        [UI_OPTIONS_KEY]: {
+          optionsSchemaSelector: selectorField,
+          hideError: false,
+        },
+      },
       hideError: false,
     });
     render(<LayoutMultiSchemaField {...props} />);
@@ -512,17 +572,17 @@ describe('LayoutMultiSchemaField', () => {
       const { schemaUtils } = getTestRegistry(schema);
       const option1 = schemaUtils.retrieveSchema(oneOfSchema[ONE_OF_KEY][0]);
       const option2 = schemaUtils.retrieveSchema(oneOfSchema[ONE_OF_KEY][1]);
-      const enumOptions = computeEnumOptions(schema, oneOfSchema[ONE_OF_KEY], schemaUtils, uiSchema);
+      const enumOptions = computeEnumOptions(schema, oneOfSchema[ONE_OF_KEY] as RJSFSchema[], schemaUtils, uiSchema);
       expect(enumOptions).toEqual([
         {
           schema: option1,
-          label: get(oneOfSchema, [ONE_OF_KEY, 0, 'title']),
-          value: get(oneOfSchema, [DEFINITIONS_KEY, 'first_option_def', PROPERTIES_KEY, 'name', DEFAULT_KEY]),
+          label: getByPath(oneOfSchema, [ONE_OF_KEY, 0, 'title']),
+          value: getByPath(oneOfSchema, [DEFINITIONS_KEY, 'first_option_def', PROPERTIES_KEY, 'name', DEFAULT_KEY]),
         },
         {
           schema: option2,
-          label: get(oneOfSchema, [ONE_OF_KEY, 1, 'title']),
-          value: get(oneOfSchema, [DEFINITIONS_KEY, 'second_option_def', PROPERTIES_KEY, 'name', DEFAULT_KEY]),
+          label: getByPath(oneOfSchema, [ONE_OF_KEY, 1, 'title']),
+          value: getByPath(oneOfSchema, [DEFINITIONS_KEY, 'second_option_def', PROPERTIES_KEY, 'name', DEFAULT_KEY]),
         },
       ]);
     });
@@ -535,12 +595,12 @@ describe('LayoutMultiSchemaField', () => {
         {
           schema: options[0],
           label: options[0].title,
-          value: get(anyOfSchema, [ANY_OF_KEY, 0, PROPERTIES_KEY, 'answer', DEFAULT_KEY]),
+          value: getByPath(anyOfSchema, [ANY_OF_KEY, 0, PROPERTIES_KEY, 'answer', DEFAULT_KEY]),
         },
         {
           schema: options[1],
           label: options[1].title,
-          value: get(anyOfSchema, [ANY_OF_KEY, 1, PROPERTIES_KEY, 'answer', DEFAULT_KEY]),
+          value: getByPath(anyOfSchema, [ANY_OF_KEY, 1, PROPERTIES_KEY, 'answer', DEFAULT_KEY]),
         },
       ]);
     });

@@ -1,13 +1,12 @@
 import type { Validator as EngineValidator } from '@cfworker/json-schema';
 import type { RJSFSchema, RJSFValidationError } from '@rjsf/utils';
 import { ROOT_SCHEMA_PREFIX } from '@rjsf/utils';
-import noop from 'lodash/noop';
 
-import * as pkg from '../src';
-import createCfworkerInstance, { installFormats } from '../src/createCfworkerInstance';
-import customizeValidator from '../src/customizeValidator';
-import type { CFWorkerValidationError } from '../src/types';
-import { normalizeFormDataForValidation } from '../src/validator';
+import createCfworkerInstance, { installFormats } from '../src/createCfworkerInstance.ts';
+import customizeValidator from '../src/customizeValidator.ts';
+import * as pkg from '../src/index.ts';
+import type { CFWorkerValidationError } from '../src/types.ts';
+import { normalizeFormDataForValidation } from '../src/validator.ts';
 
 describe('CFWorkerValidator', () => {
   it('normalizes undefined object members so required errors surface', () => {
@@ -157,7 +156,7 @@ describe('CFWorkerValidator', () => {
 
   it('returns false and warns for an invalid schema in isValid', () => {
     const validator = customizeValidator();
-    const warn = vi.spyOn(console, 'warn').mockImplementation(noop);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     expect(validator.isValid(null as unknown as RJSFSchema, {}, null as unknown as RJSFSchema)).toBe(false);
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();

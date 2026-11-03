@@ -1,8 +1,6 @@
-import get from 'lodash/get';
-import has from 'lodash/has';
-
-import { FORM_CONTEXT_NAME, LOOKUP_MAP_NAME } from './constants';
-import type { FormContextType, RJSFSchema, Registry, StrictRJSFSchema } from './types';
+import { FORM_CONTEXT_NAME, LOOKUP_MAP_NAME } from './constants.ts';
+import { getByPath, hasByPath } from './pathUtils.ts';
+import type { FormContextType, RJSFSchema, Registry, StrictRJSFSchema } from './types.ts';
 
 /** Given a React JSON Schema Form registry or formContext object, return the value associated with `toLookup`. This
  * might be contained within the lookup map in the formContext. If no such value exists, return the `fallback`
@@ -17,10 +15,11 @@ export default function lookupFromFormContext<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any,
->(regOrFc: Registry<T, S, F> | Registry<T, S, F>['formContext'], toLookup: string, fallback?: unknown) {
+  R = unknown,
+>(regOrFc: Registry<T, S, F> | Registry<T, S, F>['formContext'], toLookup: string, fallback?: R): R {
   const lookupPath = [LOOKUP_MAP_NAME];
-  if (has(regOrFc, FORM_CONTEXT_NAME)) {
+  if (hasByPath(regOrFc, FORM_CONTEXT_NAME)) {
     lookupPath.unshift(FORM_CONTEXT_NAME);
   }
-  return get(regOrFc, [...lookupPath, toLookup], fallback);
+  return getByPath<R>(regOrFc, [...lookupPath, toLookup], fallback);
 }

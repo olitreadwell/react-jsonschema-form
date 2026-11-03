@@ -1,5 +1,5 @@
-import type { ErrorSchema } from '../src';
-import { ErrorSchemaBuilder, ERRORS_KEY } from '../src';
+import type { ErrorSchema } from '../src/index.ts';
+import { ErrorSchemaBuilder, ERRORS_KEY } from '../src/index.ts';
 
 const AN_ERROR = 'an error';
 const SOME_ERRORS = ['error1', 'error2'];
@@ -394,6 +394,15 @@ describe('ErrorSchemaBuilder', () => {
       builder.addErrors('added later', ARRAY_PATH);
       expect(result).not.toBe(initial);
       expect(initial[ARRAY_PATH[0]]?.[ARRAY_PATH[1]]?.[ERRORS_KEY]).toEqual([INITIAL_ARRAY]);
+    });
+  });
+
+  describe('paths that collide with prototype keys', () => {
+    it('stores errors under a field literally named constructor', () => {
+      const builder = new ErrorSchemaBuilder();
+      builder.addErrors('nope', 'constructor.prototype');
+      expect(builder.ErrorSchema).toEqual({ constructor: { prototype: { __errors: ['nope'] } } });
+      expect(({} as { __errors?: string[] }).__errors).toBeUndefined();
     });
   });
 });

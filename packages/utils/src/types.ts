@@ -10,8 +10,8 @@ import type {
 } from 'react';
 import type { JSONSchema7 } from 'json-schema';
 
-import type { TranslatableString } from './enums';
-import './jsonSchemaAugmentation';
+import type { TranslatableString } from './enums.ts';
+import './jsonSchemaAugmentation.ts';
 
 /** The representation of any generic object type, usually used as an intersection on other types to make them more
  * flexible in the properties they support (i.e. anything else)
@@ -109,7 +109,25 @@ export interface Experimental_DefaultFormStateBehavior {
    */
   emptyObjectFields?: 'populateAllDefaults' | 'populateRequiredDefaults' | 'skipDefaults' | 'skipEmptyDefaults';
   /**
-   * Optional flag to compute the default form state using allOf and if/then/else schemas. Defaults to `skipDefaults'.
+   * Optional flag to compute the default form state using allOf and if/then/else schemas. Defaults to `skipDefaults`.
+   * NOTE: `skipDefaults` only skips the `allOf` schemas nested inside the schema that `getDefaultFormState()` computes
+   * defaults from, so the defaults of that schema's own `allOf` are still populated. Outside a `dependencies` entry,
+   * the `if-then-else` branch is picked from `formData`, not from the computed defaults, so when the `if` lists in
+   * `required` a property that only a default provides, the `then` default is left out until `formData` holds that
+   * value. Without `required`, such an `if` passes with no `formData`, so its `then` default is filled in even when the
+   * `if` does not match the defaulted value. A nested `allOf` is skipped as a whole, plain property defaults included,
+   * while an `if-then-else` placed directly in a nested object schema is resolved, along with any `allOf` next to it,
+   * unless `emptyObjectFields` is `skipEmptyDefaults`. With one `allOf` entry per `enum` value and no `formData`, the
+   * default `allOf` merger merges the `then` defaults of all the entries, and the first entry that defaults a property
+   * wins, while an `experimental_customMergeAllOf` that throws on the conflicting `default`s drops the whole `allOf`.
+   * An `experimental_customMergeAllOf` built on a deep merger also turns a property's `allOf: [{ if, then }]` into a
+   * direct `if-then-else` wherever it merges an `allOf` (the root's own, or one next to a direct `if` in a nested
+   * object schema, but not a nested `allOf` on its own), so that property's `then` default is filled in under
+   * `skipDefaults` too, unless `emptyObjectFields` is `skipEmptyDefaults`. The `allOf` and `if-then-else` of a nested
+   * object's `dependencies` entry are resolved once its property has a value, even when `emptyObjectFields` is
+   * `skipEmptyDefaults`, and a default counts as that value, so the entry's `if` is checked against it. A root
+   * `dependencies` entry counts a default only while `formData` is empty.
+   * See the `allOf` section of `experimental_defaultFormStateBehavior` in the form props docs for examples of each case.
    */
   allOf?: 'populateDefaults' | 'skipDefaults';
   /** Optional enumerated flag controlling how the defaults are merged into the form data when dealing with undefined
@@ -139,6 +157,13 @@ export interface Experimental_DefaultFormStateBehavior {
    * - `ancestorWins`: The outermost (ancestor) default value definition takes precedence over any descendant's defaults.
    */
   nestedDefaultsPrecedence?: 'descendantWins' | 'ancestorWins';
+  /** Optional enumerated flag controlling whether a boolean listed in its parent's `required` array, with no `default`
+   * of its own, is populated with `false`, defaulting to `populateFalse`.
+   * - `populateFalse`: A required boolean with no `default` is set to `false`
+   * - `skip`: No value is synthesized; the property stays `undefined` until the user answers it, so `required` remains
+   *        a validation concern
+   */
+  requiredBooleanDefault?: 'populateFalse' | 'skip';
 }
 
 /** Optional function that allows for custom merging of `allOf` schemas
@@ -185,6 +210,8 @@ export interface InputPropsType {
   max?: number | string;
   /** Specifies the `autoComplete` value for an <input> element */
   autoComplete?: HTMLInputElement['autocomplete'];
+  /** Specifies the `autoCapitalize` value for an <input> element */
+  autoCapitalize?: HTMLInputElement['autocapitalize'];
   /** Specifies a filter for what file types the user can upload. */
   accept?: HTMLInputElement['accept'];
 }
@@ -1025,7 +1052,12 @@ export interface WidgetProps<T = any, S extends StrictRJSFSchema = RJSFSchema, F
 /** The definition of a React-based Widget component */
 export type Widget<T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any> = ComponentType<
   WidgetProps<T, S, F>
->;
+> & {
+  /** A cached wrapper component that merges the widget's `defaultProps.options` into its props, stamped onto the
+   * widget by `getWidget()` so that repeated lookups return the same component for proper React reconciliation
+   */
+  MergedWidget?: Widget<T, S, F>;
+};
 
 /** The properties that are passed to the BaseInputTemplate */
 export interface BaseInputTemplateProps<
@@ -1137,6 +1169,8 @@ type UIOptionsBaseType<T = any, S extends StrictRJSFSchema = RJSFSchema, F exten
     autofocus?: boolean;
     /** Use to mark the field as supporting auto complete on a text input or textarea input */
     autocomplete?: HTMLInputElement['autocomplete'];
+    /** Controls automatic capitalization for text entered on supporting virtual keyboards */
+    autocapitalize?: HTMLInputElement['autocapitalize'];
     /** Flag, if set to `true`, will mark all child widgets from a given field as disabled */
     disabled?: boolean;
     /** The default value to use when an input for a field is empty */
@@ -1435,8 +1469,8 @@ export interface SchemaUtilsType<T = any, S extends StrictRJSFSchema = RJSFSchem
    * @returns - The firstindex of the matched option or 0 if none is available
    */
   getFirstMatchingOption(formData: T | undefined, options: S[], discriminatorField?: string): number;
-  /** Helper that acts like lodash's `get` but additionally retrieves `$ref`s as needed to get the path for schemas
-   * containing potentially nested `$ref`s.
+  /** Reads the value at `path` within a schema, additionally retrieving `$ref`s as needed to resolve
+   * schemas containing potentially nested `$ref`s.
    *
    * @param schema - The current node within the JSON schema recursion
    * @param path - The remaining keys in the path to the desired property

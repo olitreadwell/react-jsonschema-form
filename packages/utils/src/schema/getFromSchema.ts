@@ -1,8 +1,5 @@
-import get from 'lodash/get';
-import has from 'lodash/has';
-import isEmpty from 'lodash/isEmpty';
-
-import { REF_KEY } from '../constants';
+import { REF_KEY } from '../constants.ts';
+import { getByPath, hasByPath, toPath } from '../pathUtils.ts';
 import type {
   Experimental_CustomMergeAllOf,
   FormContextType,
@@ -10,10 +7,10 @@ import type {
   SchemaFieldPath,
   StrictRJSFSchema,
   ValidatorType,
-} from '../types';
-import retrieveSchema from './retrieveSchema';
+} from '../types.ts';
+import retrieveSchema from './retrieveSchema.ts';
 
-/** Internal helper function that acts like lodash's `get` but additionally retrieves `$ref`s as needed to get the path
+/** Internal helper function that acts like `getByPath` but additionally retrieves `$ref`s as needed to get the path
  * for schemas containing potentially nested `$ref`s.
  *
  * @param validator - An implementation of the `ValidatorType` interface that will be forwarded to all the APIs
@@ -31,16 +28,17 @@ function getFromSchemaInternal<T = any, S extends StrictRJSFSchema = RJSFSchema,
   experimental_customMergeAllOf?: Experimental_CustomMergeAllOf<S>,
 ): T | S | undefined {
   let fieldSchema = schema;
-  if (has(schema, REF_KEY)) {
+  // hasByPath instead of `in` because `schema` can be undefined at runtime when drilling past a non-matching xxxOf
+  if (hasByPath(schema, REF_KEY)) {
     fieldSchema = retrieveSchema<T, S, F>(validator, schema, rootSchema, undefined, experimental_customMergeAllOf);
   }
-  if (isEmpty(path)) {
+  if (path.length === 0) {
     return fieldSchema;
   }
-  const pathList = Array.isArray(path) ? [...path] : path.split('.');
+  const pathList = Array.isArray(path) ? [...path] : toPath(path);
   const [part, ...nestedPath] = pathList;
-  if (part !== undefined && part !== '' && has(fieldSchema, part)) {
-    fieldSchema = get(fieldSchema, part) as S;
+  if (part !== undefined && part !== '' && hasByPath(fieldSchema, part)) {
+    fieldSchema = getByPath<S>(fieldSchema, part);
     return getFromSchemaInternal<T, S, F>(
       validator,
       rootSchema,
@@ -52,7 +50,7 @@ function getFromSchemaInternal<T = any, S extends StrictRJSFSchema = RJSFSchema,
   return undefined;
 }
 
-/** Helper that acts like lodash's `get` but additionally retrieves `$ref`s as needed to get the path for schemas
+/** Helper that acts like `getByPath` but additionally retrieves `$ref`s as needed to get the path for schemas
  * containing potentially nested `$ref`s.
  *
  * @param validator - An implementation of the `ValidatorType` interface that will be forwarded to all the APIs

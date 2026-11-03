@@ -1,11 +1,12 @@
 {
   "name": "@rjsf/chakra-ui",
-  "version": "6.8.0",
+  "version": "6.11.0",
   "description": "Chakra UI theme, fields, and widgets for react-jsonschema-form",
   "main": "dist/index.js",
   "module": "lib/index.js",
   "typings": "lib/index.d.ts",
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
@@ -39,7 +40,7 @@
     "src"
   ],
   "scripts": {
-    "build:ts": "tsc -b tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build:ts": "tsc -b",
     "build:cjs": "esbuild ./src/index.ts --bundle --outfile=dist/index.cjs --sourcemap --packages=external --format=cjs",
     "build:esm": "esbuild ./src/index.ts --bundle --outfile=dist/chakra-ui.esm.js --sourcemap --packages=external --format=esm",
     "build:umd": "rollup dist/chakra-ui.esm.js --format=umd --file=dist/chakra-ui.umd.js --name=@rjsf/chakra-ui",
@@ -51,7 +52,7 @@
     "test": "vitest run",
     "test:update": "vitest run --update",
     "test:watch": "vitest",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc -b tsconfig.json test/tsconfig.json"
   },
   "lint-staged": {
     "{src,test}/**/*.{ts,tsx}": [
@@ -86,7 +87,7 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "@chakra-ui/react": "^3.35.0",
+    "@chakra-ui/react": "^3.37.0",
     "@emotion/jest": "^11.14.2",
     "@emotion/react": "^11.14.0",
     "@rjsf/core": "workspace:^",
@@ -96,14 +97,10 @@
     "chakra-react-select": "^6.1.3"
   },
   "dependencies": {
-    "@ark-ui/react": "^5.36.2",
     "@emotion/cache": "^11.14.0",
     "@emotion/is-prop-valid": "^1.4.0",
-    "@emotion/memoize": "^0.9.0",
     "@emotion/weak-memoize": "^0.4.0",
-    "@zag-js/react": "^1.40.0",
-    "lucide-react": "^1.21.0",
-    "react-icons": "^5.6.0",
-    "react-select": "^5.10.2"
+    "lucide-react": "^1.49.0",
+    "react-icons": "^5.7.0"
   }
 }

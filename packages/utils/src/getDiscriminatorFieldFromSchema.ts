@@ -1,7 +1,6 @@
-import get from 'lodash/get';
-
-import { DISCRIMINATOR_PATH } from './constants';
-import type { RJSFSchema, StrictRJSFSchema } from './types';
+import { DISCRIMINATOR_PATH } from './constants.ts';
+import { getByPath } from './pathUtils.ts';
+import type { RJSFSchema, StrictRJSFSchema } from './types.ts';
 
 /** Returns the `discriminator.propertyName` when defined in the `schema` if it is a string. A warning is generated when
  * it is not a string. Returns `undefined` when a valid discriminator is not present.
@@ -11,7 +10,7 @@ import type { RJSFSchema, StrictRJSFSchema } from './types';
  */
 export default function getDiscriminatorFieldFromSchema<S extends StrictRJSFSchema = RJSFSchema>(schema: S) {
   let discriminator: string | undefined;
-  const maybeString = get(schema, DISCRIMINATOR_PATH);
+  const maybeString = getByPath(schema, DISCRIMINATOR_PATH);
   if (typeof maybeString === 'string') {
     discriminator = maybeString;
   } else if (maybeString !== undefined) {

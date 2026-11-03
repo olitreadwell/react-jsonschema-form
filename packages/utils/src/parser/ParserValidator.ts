@@ -1,8 +1,6 @@
-import get from 'lodash/get';
-
-import { ID_KEY } from '../constants';
-import deepEquals from '../deepEquals';
-import hashForSchema from '../hashForSchema';
+import { ID_KEY } from '../constants.ts';
+import deepEquals from '../deepEquals.ts';
+import hashForSchema from '../hashForSchema.ts';
 import type {
   CustomValidator,
   ErrorSchema,
@@ -14,7 +12,7 @@ import type {
   UiSchema,
   ValidationData,
   ValidatorType,
-} from '../types';
+} from '../types.ts';
 
 /** The type of the map of schema hash to schema
  */
@@ -62,7 +60,7 @@ export default class ParserValidator<
    * @param hash - The hash value at which to map the schema
    */
   addSchema(schema: S, hash: string) {
-    const key = get(schema, ID_KEY, hash);
+    const key = schema[ID_KEY] ?? hash;
     const identifiedSchema = { ...schema, [ID_KEY]: key };
     const existing = this.schemaMap[key];
     if (!existing) {

@@ -3,15 +3,15 @@ import { parseDateString, toDateString, TranslatableString, utcToLocal } from '@
 import { fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import StringField from '../src/components/fields/StringField';
-import TextWidget from '../src/components/widgets/TextWidget';
+import StringField from '../src/components/fields/StringField.tsx';
 import {
   createFormComponent,
   getSelectedOptionValue,
   setupConsoleErrorSuppression,
   submitForm,
   expectToHaveBeenCalledWithFormData,
-} from './testUtils';
+} from './testUtils.tsx';
+import { TextWidgetTest } from './TextWidgetTest.tsx';
 
 const consoleErrorSuppression = setupConsoleErrorSuppression();
 
@@ -36,20 +36,6 @@ function StringFieldTest(props: FieldProps) {
     props.onChange(newFormData, path, raiseError, id);
   };
   return <StringField {...props} onChange={onChangeTest} />;
-}
-
-export function TextWidgetTest(props: WidgetProps) {
-  const onChangeTest = (newFormData: any, errorSchema?: ErrorSchema, id?: string) => {
-    const value = newFormData;
-    let raiseError = errorSchema;
-    if (value !== 'test') {
-      raiseError = {
-        __errors: ['Value must be "test"'],
-      } as ErrorSchema;
-    }
-    props.onChange(newFormData, raiseError, id);
-  };
-  return <TextWidget {...props} onChange={onChangeTest} />;
 }
 
 const user = userEvent.setup();
@@ -250,6 +236,30 @@ describe('StringField', () => {
       expectToHaveBeenCalledWithFormData(onChange, 'default', 'root');
     });
 
+    it('should handle the allowClearTextInputs clear button the same as an empty string change event', async () => {
+      const { node, onChange } = createFormComponent({
+        schema: { type: 'string' },
+        uiSchema: { 'ui:allowClearTextInputs': true },
+        formData: 'x',
+      });
+
+      await user.click(node.querySelector('button.btn-clear')!);
+
+      expectToHaveBeenCalledWithFormData(onChange, undefined, 'root');
+    });
+
+    it('should handle the allowClearTextInputs clear button with custom ui:emptyValue the same as an empty string change event', async () => {
+      const { node, onChange } = createFormComponent({
+        schema: { type: 'string' },
+        uiSchema: { 'ui:allowClearTextInputs': true, 'ui:emptyValue': 'default' },
+        formData: 'x',
+      });
+
+      await user.click(node.querySelector('button.btn-clear')!);
+
+      expectToHaveBeenCalledWithFormData(onChange, 'default', 'root');
+    });
+
     it('should handle an empty string change event with defaults set', async () => {
       const { node, onChange } = createFormComponent({
         schema: {
@@ -305,6 +315,16 @@ describe('StringField', () => {
       });
 
       expect(node.querySelector('input')).toHaveAttribute('autocomplete', 'family-name');
+    });
+
+    it('should create and set autocapitalize attribute', () => {
+      const { node } = createFormComponent({
+        schema: { type: 'string' },
+        uiSchema: { 'ui:autocapitalize': 'words' },
+        formData: undefined,
+      });
+
+      expect(node.querySelector('input')).toHaveAttribute('autocapitalize', 'words');
     });
 
     it('Check that when formData changes, the form should re-validate', async () => {
@@ -763,7 +783,8 @@ describe('StringField', () => {
       // The original test's use of Simulate to pass the UTC version to the underlying callback worked fine. Switching
       // to @testing-library/react results in the event handler not being fired due to the `datetime-local` input type
       // not accepting the trailing Z in the string, thus we remove it via utcToLocal
-      const newDatetime = utcToLocal(new Date().toJSON());
+      // jsdom drops trailing zeros from fractional seconds, so the milliseconds must not end in 0
+      const newDatetime = utcToLocal('2016-04-05T14:01:30.123Z');
       const dateNode = node.querySelector<HTMLInputElement>('[type=datetime-local]')!;
       await user.click(dateNode);
       await user.paste(newDatetime);

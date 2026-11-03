@@ -20,6 +20,8 @@ Those types are exported for use by `@rjsf/core` and all the themes, as well as 
 
 These types can be found on GitHub [here](https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/utils/src/types.ts).
 
+**`ObjectPath`** — Used by the path utilities (`getByPath`, `setByPath`, `hasByPath`, `unsetByPath`) to address a value inside a plain object. It is `string | number | FieldPathList`. A bare **string is always a single literal key**: `'a.b'` means the key `'a.b'`, never the nested path `a` → `b`. To walk a dotted path string, split it explicitly with [toPath()](#topath) first, or pass a `FieldPathList` (`(string | number)[]`) of segments. Reads and existence checks resolve **own** properties only, so inherited members never appear as form data.
+
 **`SchemaFieldPath`** — Used when navigating a JSON Schema subtree (for example with `getFromSchema` and `findFieldInSchema` on `SchemaUtilsType`, documented under [Validator-based utility functions](#validator-based-utility-functions)). It is `string | FieldPathList`: either a dotted path or an array of segments with the same rules as `FieldPathList` (`(string | number)[]`). A numeric segment denotes an array index or an object key that is numeric. Navigation skips only `undefined` or empty-string segments, so segment **`0`** is always honored (this avoids the bug from treating `0` as a falsy path unit).
 
 ## Enums
@@ -160,7 +162,7 @@ If `start` and `stop` are negative numbers (or zero), then they will be treated 
 
 ### deepEquals()
 
-Implements a deep equals using the `lodash.isEqualWith` function, that provides a customized comparator that assumes all functions are equivalent.
+Implements a deep equals that treats all functions as equivalent and tracks circular references, so self-referential inputs do not recurse infinitely.
 
 #### Parameters
 
@@ -396,16 +398,52 @@ Otherwise, return the sub-schema. Also deals with nested `$ref`s in the sub-sche
 
 - Error indicating that no schema for that reference exists
 
-### getChangedFields(a: unknown, b: unknown)
+### getByPath&lt;R = unknown>()
+
+Gets the value at `path` of `obj`, returning `defaultValue` when the resolved value is `undefined`.
+A bare string `path` is a single literal key, not a dotted path; use [toPath()](#topath) to split a dotted path string into segments first.
+Every segment must be an **own** property, matching [hasByPath()](#hasbypath), so the two can be used as a guard/read pair.
+Inherited members are never resolved: `getByPath({}, 'toString')` returns `defaultValue` rather than `Function.prototype.toString`. For the plain form data and schemas RJSF navigates, an inherited member is never data, and the own-property rule also makes prototype internals such as `__proto__` unreachable unless they are genuine own data keys.
+
+An empty segment list resolves to nothing, so `defaultValue` is returned rather than `obj` itself; this matches [hasByPath()](#hasbypath), which is `false` for an empty path.
+
+The value at a runtime-computed path cannot be known statically, so `R` is the caller's declaration of the expected type (like `Map.get()`); it defaults to `unknown`, which forces narrowing when no type is given.
+
+#### Parameters
+
+- obj: unknown - The object to query
+- path: ObjectPath - The single key or list of path segments at which to get the value
+- [defaultValue]: R - The value returned when the resolved value is `undefined`
+
+#### Returns
+
+- R: The resolved value, otherwise `defaultValue`
+
+#### Example
+
+```typescript
+getByPath({ a: { b: 1 } }, ['a', 'b']); // 1
+getByPath({ 'a.b': 1 }, 'a.b'); // 1, a bare string is one literal key
+getByPath({ a: { b: 1 } }, toPath('a.b')); // 1
+getByPath({ a: {} }, ['a', 'missing'], 'fallback'); // 'fallback'
+getByPath({}, 'toString', 'fallback'); // 'fallback', inherited members are not read
+getByPath({ a: 1 }, [], 'fallback'); // 'fallback', an empty path resolves to nothing
+```
+
+### getChangedFields(a: unknown, b: unknown, deep?: boolean)
 
 Compares two objects and returns the names of the fields that have changed.
 This function iterates over each field of object `a`, using `_.isEqual` to compare the field value with the corresponding field value in object `b`.
 If the values are different, the field name will be included in the returned array.
 
+When `deep` is true, a field holding a nested object or a same-length array is descended into and the dotted path of the deepest field that changed is returned instead of the name of the top-level field holding it.
+A key that contains a `.` or a `[` is descended into like any other: the path it produces cannot be told apart from a path through nested keys, and neither can the entry an `ErrorSchema` keeps for it, since [toErrorSchema()](#toerrorschema) spells such a name out as a path in the same way.
+
 #### Parameters
 
 - a: unknown - The first object, representing the original data to compare.
 - b: unknown - The second object, representing the updated data to compare.
+- [deep=false]: boolean - Optional flag that, when true, returns the dotted path of the deepest field that changed.
 
 #### Returns
 
@@ -418,6 +456,15 @@ const a = { name: 'John', age: 30 };
 const b = { name: 'John', age: 31 };
 const changedFields = getChangedFields(a, b);
 console.log(changedFields); // Output: ['age']
+```
+
+#### Example (deep)
+
+```typescript
+const a = { items: [{ qux: '', corge: '' }] };
+const b = { items: [{ qux: 'a', corge: '' }] };
+console.log(getChangedFields(a, b)); // Output: ['items']
+console.log(getChangedFields(a, b, true)); // Output: ['items.0.qux']
 ```
 
 ### getDecimalSeparator(languages?: string | string[])
@@ -512,6 +559,20 @@ Widgets should call this helper once and pass the result to `enumOptionValueEnco
 #### Returns
 
 - OptionValueFormat: The resolved `OptionValueFormat`, defaulting to `'indexed'` when not set
+
+### getPropertySchema&lt;S extends StrictRJSFSchema = RJSFSchema>()
+
+Returns the sub-schema declared for `property` in the `properties` of `schema`, falling back to an empty schema when the schema has no such property.
+Callers treat the properties of a schema as schemas of the same type `S`, which the `JSONSchema7` typing of `properties` cannot express, so this function owns that single assertion rather than repeating it at every lookup.
+
+#### Parameters
+
+- schema: S | undefined - The schema, if any, from which to read the property sub-schema
+- property: string - The name of the property whose sub-schema is desired
+
+#### Returns
+
+- S: The sub-schema for `property`, or an empty schema when it is not declared
 
 ### getSchemaType()
 
@@ -611,6 +672,29 @@ on the schema type and `widget` name. If no widget component can be found an `Er
 #### Throws
 
 - An error if there is no `Widget` component that can be returned
+
+### hasByPath()
+
+Determines whether `obj` has an **own** property at `path`.
+A bare string `path` is a single literal key, not a dotted path; use [toPath()](#topath) to split a dotted path string into segments first.
+Every segment is checked with `Object.hasOwn()`, so inherited properties report `false` — `hasByPath({}, 'toString')` is `false`. [getByPath()](#getbypath) applies the same own-property rule, so the two can be used as a guard/read pair.
+
+#### Parameters
+
+- obj: unknown - The object to query
+- path: ObjectPath - The single key or list of path segments to check for
+
+#### Returns
+
+- boolean: True if the own property exists at `path`, otherwise false
+
+#### Example
+
+```typescript
+hasByPath({ a: { b: undefined } }, ['a', 'b']); // true, the key exists
+hasByPath({ a: { b: 1 } }, 'a.b'); // false, there is no key named 'a.b'
+hasByPath({}, 'toString'); // false, inherited properties are not own properties
+```
 
 ### hashObject()
 
@@ -751,6 +835,19 @@ In this case, `thing` is an object if it has the type `object` but is NOT null, 
 
 - boolean: True if it is a non-null, non-array, non-File object
 
+### isPlainObject()
+
+Determines whether `thing` is a plain object, i.e. one created by the `Object` constructor or with a `null` prototype.
+Unlike [isObject()](#isobject), class instances such as `Error` are not plain objects, which matters when recursively walking a structure whose nested values are expected to be plain data.
+
+#### Parameters
+
+- thing: unknown - The thing to check to see whether it is a plain object
+
+#### Returns
+
+- boolean: True if it is a plain object, otherwise false. When true, `thing` is narrowed to `Record<string, unknown>`
+
 ### isRootSchema&lt;T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>()
 
 Helper to check whether a JSON schema object is the root schema. The schema is a root schema with root `properties`
@@ -809,7 +906,7 @@ Converts a local Date string into a UTC date string
 
 - string | undefined: A UTC date string if `dateString` is truthy, otherwise undefined
 
-### lookupFromFormContext&lt;T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>()
+### lookupFromFormContext&lt;T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any, R = unknown>()
 
 Given a React JSON Schema Form registry or formContext object, return the value associated with `toLookup`.
 This might be contained within the lookup map in the formContext.
@@ -819,11 +916,11 @@ If no such value exists, return the `fallback` value.
 
 - regOrFc: Registry&lt;T, S, F> | Registry&lt;T, S, F>['formContext'] - The @rjsf registry or form context in which the lookup will occur
 - toLookup: string - The name of the field in the lookup map in the form context to get the value for
-- [fallback]: unknown - The fallback value to use if the form context does not contain a value for `toLookup`
+- [fallback]: R - The fallback value to use if the form context does not contain a value for `toLookup`
 
 #### Returns
 
-- any: The value associated with `toLookup` in the form context or `fallback`
+- R: The value associated with `toLookup` in the form context or `fallback`
 
 ### mergeDefaultsWithFormData&lt;T = any>()
 
@@ -902,6 +999,14 @@ Return a consistent `id` for the `optionIndex`s of a `Radio` or `Checkboxes` wid
 
 - string: An id for the option index based on the parent `id`
 
+### noop()
+
+A function that does nothing and returns `undefined`, useful as a placeholder for an optional callback or as the implementation of a mocked function.
+
+#### Returns
+
+- void
+
 ### optionsList&lt;T = any, S extends StrictRJSFSchema = RJSFSchema,F extends FormContextType = any>()
 
 Gets the list of options from the `schema`. If the schema has an enum list, then those enum values are returned.
@@ -929,7 +1034,7 @@ If the schema has a `oneOf` or `anyOf`, then the value is the list of either:
 Given a list of `properties` and an `order` list, returns a list that contains the `properties` ordered correctly.
 If `order` is not an array, then the untouched `properties` list is returned.
 Otherwise `properties` is ordered per the `order` list.
-If `order` contains a '_' then any `properties` that are not mentioned explicity in `order` will be places in the location of the `_`.
+If `order` contains a '_' then any `properties` that are not mentioned explicitly in `order` will be places in the location of the `_`.
 
 #### Parameters
 
@@ -1000,6 +1105,22 @@ When a `params` array is provided, each value in the array is used to replace an
 
 - string: The updated string with any replacement specifiers replaced
 
+### resolveDefaultWidget&lt;T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>()
+
+Computes the widget name a field falls back to when no `ui:widget` is specified, along with the `enumOptions` (if any) that back a `select`-like fallback.
+The default is `select` when `schema` has enumerable options, the schema's `format` when a widget is registered for it, or `text` otherwise.
+
+#### Parameters
+
+- schema: S - The schema for the field
+- uiSchema: UiSchema&lt;T, S, F> | undefined - The uiSchema for the field
+- schemaUtils: SchemaUtilsType&lt;T, S, F> - The `SchemaUtilsType` used to detect whether `schema` has enumerable options
+- [registeredWidgets={}]: RegistryWidgetsType&lt;T, S, F> - A registry of widget name to `Widget` implementation
+
+#### Returns
+
+- \{ defaultWidget: string, enumOptions: EnumOptionsType&lt;S>[] | undefined }: The default widget name and the `enumOptions`, if any, computed along the way
+
 ### resolveUiSchema&lt;T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>()
 
 Resolves the uiSchema for a given schema, considering `ui:definitions` stored in the registry.
@@ -1021,6 +1142,23 @@ Resolution order (later sources override earlier):
 
 - UiSchema&lt;T, S, F>: The resolved uiSchema with definitions merged in
 
+### schemaHasNestedConditional&lt;S extends StrictRJSFSchema = RJSFSchema>()
+
+Recursively checks whether the given raw `schema` contains a `dependencies` or `if` keyword anywhere below its top level, e.g. inside a nested object's `properties`, a `$ref`, an array's tuple `items`, or a `patternProperties` entry.
+`retrieveSchema()` only resolves the `dependencies`/`if` declared directly on the schema it is given, so a root-level retrieved schema never reflects a conditional branch switch that happens deeper in the tree.
+`Form` uses this to detect when a comparison of root-level retrieved schemas can't be trusted to decide whether sanitization is needed.
+
+#### Parameters
+
+- schema: S | boolean | undefined - The raw schema node to search
+- rootSchema: S - The root schema, used to resolve any `$ref`s encountered while searching
+- atRoot: boolean = true - Whether `schema` is the root of the search, whose own `dependencies`/`if` don't count
+- seenRefs: string[] = [] - The `$ref`s already resolved along this branch of the search, to guard against cycles
+
+#### Returns
+
+- boolean: True if a `dependencies` or `if` keyword exists below the root of the schema
+
 ### schemaRequiresTrueValue&lt;S extends StrictRJSFSchema = RJSFSchema>()
 
 Check to see if a `schema` specifies that a value must be true. This happens when:
@@ -1037,6 +1175,33 @@ Check to see if a `schema` specifies that a value must be true. This happens whe
 #### Returns
 
 - boolean: True if the schema specifies a value that must be true, false otherwise
+
+### setByPath&lt;O>()
+
+Sets `value` at `path` of `obj`, mutating and returning `obj`.
+A bare string `path` is a single literal key, not a dotted path; use [toPath()](#topath) to split a dotted path string into segments first.
+Missing intermediate containers are created: arrays when the next segment is a valid array index, plain objects otherwise, or always plain objects when `createIntermediateObjects` is true.
+A path containing a `__proto__` segment is refused and `obj` is returned unmodified, preventing prototype pollution. `constructor` and `prototype` are legal JSON Schema property names and are written normally: intermediate containers are read as own properties only, so `['constructor', 'prototype', 'x']` shadows `constructor` with a fresh object instead of reaching `Object.prototype`.
+
+#### Parameters
+
+- obj: O - The object to modify
+- path: ObjectPath - The single key or list of path segments at which to set the value
+- value: unknown - The value to set
+- [createIntermediateObjects=false]: boolean - When true, always create plain objects for missing intermediate containers, even for numeric path segments
+
+#### Returns
+
+- O: The mutated `obj`
+
+#### Example
+
+```typescript
+setByPath({}, ['a', 'b'], 1); // { a: { b: 1 } }
+setByPath({}, ['a', 0], 1); // { a: [1] }, a numeric next segment creates an array
+setByPath({}, ['a', 0], 1, true); // { a: { 0: 1 } }, createIntermediateObjects forces an object
+setByPath({}, 'a.b', 1); // { 'a.b': 1 }, a bare string is one literal key
+```
 
 ### shallowEquals()
 
@@ -1196,6 +1361,50 @@ generate the path from the `parentPath` (if provided) and the `idPrefix` and `id
 #### Returns
 
 - FieldPathId: The `FieldPathId` for the given `fieldPath` and the optional `parentPathId`
+
+### toPath()
+
+Converts a dotted path string, such as the `property` of a validation error, into its list of path segments.
+Array indexes may be written bracketed (`'a[0].b'`) or dotted (`'a.0.b'`), and empty segments — from a leading `.`, a trailing `.` or a `..` run — are dropped.
+Only the grammar RJSF itself produces is supported: dots and brackets are always separators, so quoted keys are not recognized and keys containing dots must be addressed with a segment list instead of a string.
+
+#### Parameters
+
+- path: string - The string path to convert, such as `'.level1.level2[2].level3'`
+
+#### Returns
+
+- string[]: The list of path segments, such as `['level1', 'level2', '2', 'level3']`
+
+#### Example
+
+```typescript
+toPath('.level1.level2[2].level3'); // ['level1', 'level2', '2', 'level3']
+toPath('a.0.b'); // ['a', '0', 'b']
+getByPath(formData, toPath(error.property)); // the usual pairing with the path utilities
+```
+
+### unsetByPath()
+
+Removes the own property at `path` of `obj`, mutating `obj`.
+A bare string `path` is a single literal key, not a dotted path; use [toPath()](#topath) to split a dotted path string into segments first.
+
+#### Parameters
+
+- obj: unknown - The object to modify
+- path: ObjectPath - The single key or list of path segments at which to remove the property
+
+#### Returns
+
+- boolean: True if the property was removed or did not exist, otherwise false. A non-configurable property returns false rather than throwing in strict mode
+
+#### Example
+
+```typescript
+const obj = { a: { b: 1 } };
+unsetByPath(obj, ['a', 'b']); // true, obj is now { a: {} }
+unsetByPath(obj, ['a', 'missing']); // true, nothing to remove
+```
 
 ### unwrapErrorHandler&lt;T = any>()
 
@@ -1406,7 +1615,7 @@ Determines whether the combination of `schema` and `uiSchema` properties indicat
 
 ### getFromSchema&lt;T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>()
 
-Helper that acts like lodash's `get` but additionally retrieves `$ref`s as needed to get the path for schemas containing potentially nested `$ref`s.
+Reads the value at `path` within a schema, additionally retrieving `$ref`s as needed to resolve schemas containing potentially nested `$ref`s.
 The `path` accepts a [`SchemaFieldPath`](#types) (dotted string or `FieldPathList`-style segment array).
 
 #### Parameters
@@ -1689,7 +1898,7 @@ Resets all errors in the `ErrorSchemaBuilder` back to the `initialSchema` if pro
 ### addErrors()
 
 Adds the `errorOrList` to the list of errors in the `ErrorSchema` at either the root level or the location within the schema described by the `pathOfError`.
-For more information about how to specify the path see the [eslint lodash plugin docs](https://github.com/wix/eslint-plugin-lodash/blob/master/docs/rules/path-style.md).
+The path is either a dotted string, with optional bracketed array indexes such as `'level1.level2[2]'`, or a list of segments; see [toPath()](#topath) for the grammar a string path accepts.
 
 #### Parameters
 
@@ -1703,7 +1912,7 @@ For more information about how to specify the path see the [eslint lodash plugin
 ### setErrors()
 
 Sets/replaces the `errorOrList` as the error(s) in the `ErrorSchema` at either the root level or the location within the schema described by the `pathOfError`.
-For more information about how to specify the path see the [eslint lodash plugin docs](https://github.com/wix/eslint-plugin-lodash/blob/master/docs/rules/path-style.md).
+The path is either a dotted string, with optional bracketed array indexes such as `'level1.level2[2]'`, or a list of segments; see [toPath()](#topath) for the grammar a string path accepts.
 
 #### Parameters
 
@@ -1717,7 +1926,7 @@ For more information about how to specify the path see the [eslint lodash plugin
 ### clearErrors()
 
 Clears the error(s) in the `ErrorSchema` at either the root level or the location within the schema described by the `pathOfError`.
-For more information about how to specify the path see the [eslint lodash plugin docs](https://github.com/wix/eslint-plugin-lodash/blob/master/docs/rules/path-style.md).
+The path is either a dotted string, with optional bracketed array indexes such as `'level1.level2[2]'`, or a list of segments; see [toPath()](#topath) for the grammar a string path accepts.
 
 #### Parameters
 

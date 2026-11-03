@@ -2198,7 +2198,6 @@ exports[`nameGenerator > bracketNameGenerator > fixed array 1`] = `
                         class="checkbox"
                         id="root_2"
                         name="root[2]"
-                        required=""
                         type="checkbox"
                       />
                     </div>
@@ -3973,25 +3972,16 @@ exports[`with title and description > array 1`] = `
         <div
           class="array-field-template rjsf-field rjsf-field-array rjsf-field-array-of-string"
         >
-          <div
-            class="title-field mb-6"
+          <h3
+            class="text-2xl font-bold"
             id="root__title"
           >
-            <h2
-              class="text-3xl font-bold text-primary mb-2"
-            >
-              Test field
-            </h2>
+            Test field
+          </h3>
+          <div>
             <div
-              class="divider divider-primary my-0"
-            />
-          </div>
-          <div
-            class="description-field my-4"
-            id="root__description"
-          >
-            <div
-              class="text-sm text-base-content/80"
+              class="text-sm text-accent"
+              id="root__description"
             >
               a test description
             </div>
@@ -4078,25 +4068,16 @@ exports[`with title and description > array icons 1`] = `
         <div
           class="array-field-template rjsf-field rjsf-field-array rjsf-field-array-of-string"
         >
-          <div
-            class="title-field mb-6"
+          <h3
+            class="text-2xl font-bold"
             id="root__title"
           >
-            <h2
-              class="text-3xl font-bold text-primary mb-2"
-            >
-              Test field
-            </h2>
+            Test field
+          </h3>
+          <div>
             <div
-              class="divider divider-primary my-0"
-            />
-          </div>
-          <div
-            class="description-field my-4"
-            id="root__description"
-          >
-            <div
-              class="text-sm text-base-content/80"
+              class="text-sm text-accent"
+              id="root__description"
             >
               a test description
             </div>
@@ -4651,25 +4632,16 @@ exports[`with title and description > fixed array 1`] = `
         <div
           class="array-field-template rjsf-field rjsf-field-array rjsf-field-array-fixed-items"
         >
-          <div
-            class="title-field mb-6"
+          <h3
+            class="text-2xl font-bold"
             id="root__title"
           >
-            <h2
-              class="text-3xl font-bold text-primary mb-2"
-            >
-              Test field
-            </h2>
+            Test field
+          </h3>
+          <div>
             <div
-              class="divider divider-primary my-0"
-            />
-          </div>
-          <div
-            class="description-field my-4"
-            id="root__description"
-          >
-            <div
-              class="text-sm text-base-content/80"
+              class="text-sm text-accent"
+              id="root__description"
             >
               a test description
             </div>
@@ -4865,25 +4837,16 @@ exports[`with title and description from both > array 1`] = `
         <div
           class="array-field-template rjsf-field rjsf-field-array rjsf-field-array-of-string"
         >
-          <div
-            class="title-field mb-6"
+          <h3
+            class="text-2xl font-bold"
             id="root__title"
           >
-            <h2
-              class="text-3xl font-bold text-primary mb-2"
-            >
-              My Field
-            </h2>
+            My Field
+          </h3>
+          <div>
             <div
-              class="divider divider-primary my-0"
-            />
-          </div>
-          <div
-            class="description-field my-4"
-            id="root__description"
-          >
-            <div
-              class="text-sm text-base-content/80"
+              class="text-sm text-accent"
+              id="root__description"
             >
               a fancier description
             </div>
@@ -4970,25 +4933,16 @@ exports[`with title and description from both > array icons 1`] = `
         <div
           class="array-field-template rjsf-field rjsf-field-array rjsf-field-array-of-string"
         >
-          <div
-            class="title-field mb-6"
+          <h3
+            class="text-2xl font-bold"
             id="root__title"
           >
-            <h2
-              class="text-3xl font-bold text-primary mb-2"
-            >
-              My Field
-            </h2>
+            My Field
+          </h3>
+          <div>
             <div
-              class="divider divider-primary my-0"
-            />
-          </div>
-          <div
-            class="description-field my-4"
-            id="root__description"
-          >
-            <div
-              class="text-sm text-base-content/80"
+              class="text-sm text-accent"
+              id="root__description"
             >
               a fancier description
             </div>
@@ -5543,25 +5497,16 @@ exports[`with title and description from both > fixed array 1`] = `
         <div
           class="array-field-template rjsf-field rjsf-field-array rjsf-field-array-fixed-items"
         >
-          <div
-            class="title-field mb-6"
+          <h3
+            class="text-2xl font-bold"
             id="root__title"
           >
-            <h2
-              class="text-3xl font-bold text-primary mb-2"
-            >
-              My Field
-            </h2>
+            My Field
+          </h3>
+          <div>
             <div
-              class="divider divider-primary my-0"
-            />
-          </div>
-          <div
-            class="description-field my-4"
-            id="root__description"
-          >
-            <div
-              class="text-sm text-base-content/80"
+              class="text-sm text-accent"
+              id="root__description"
             >
               a fancier description
             </div>
@@ -5757,25 +5702,16 @@ exports[`with title and description from uiSchema > array 1`] = `
         <div
           class="array-field-template rjsf-field rjsf-field-array rjsf-field-array-of-string"
         >
-          <div
-            class="title-field mb-6"
+          <h3
+            class="text-2xl font-bold"
             id="root__title"
           >
-            <h2
-              class="text-3xl font-bold text-primary mb-2"
-            >
-              My Field
-            </h2>
+            My Field
+          </h3>
+          <div>
             <div
-              class="divider divider-primary my-0"
-            />
-          </div>
-          <div
-            class="description-field my-4"
-            id="root__description"
-          >
-            <div
-              class="text-sm text-base-content/80"
+              class="text-sm text-accent"
+              id="root__description"
             >
               a fancier description
             </div>
@@ -5862,25 +5798,16 @@ exports[`with title and description from uiSchema > array icons 1`] = `
         <div
           class="array-field-template rjsf-field rjsf-field-array rjsf-field-array-of-string"
         >
-          <div
-            class="title-field mb-6"
+          <h3
+            class="text-2xl font-bold"
             id="root__title"
           >
-            <h2
-              class="text-3xl font-bold text-primary mb-2"
-            >
-              My Field
-            </h2>
+            My Field
+          </h3>
+          <div>
             <div
-              class="divider divider-primary my-0"
-            />
-          </div>
-          <div
-            class="description-field my-4"
-            id="root__description"
-          >
-            <div
-              class="text-sm text-base-content/80"
+              class="text-sm text-accent"
+              id="root__description"
             >
               a fancier description
             </div>
@@ -6435,25 +6362,16 @@ exports[`with title and description from uiSchema > fixed array 1`] = `
         <div
           class="array-field-template rjsf-field rjsf-field-array rjsf-field-array-fixed-items"
         >
-          <div
-            class="title-field mb-6"
+          <h3
+            class="text-2xl font-bold"
             id="root__title"
           >
-            <h2
-              class="text-3xl font-bold text-primary mb-2"
-            >
-              My Field
-            </h2>
+            My Field
+          </h3>
+          <div>
             <div
-              class="divider divider-primary my-0"
-            />
-          </div>
-          <div
-            class="description-field my-4"
-            id="root__description"
-          >
-            <div
-              class="text-sm text-base-content/80"
+              class="text-sm text-accent"
+              id="root__description"
             >
               a fancier description
             </div>

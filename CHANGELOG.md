@@ -16,6 +16,293 @@ should change the heading of the (upcoming) version to include a major version b
 
 -->
 
+# 6.11.1
+
+## @rjsf/core
+
+- Updated `markdown-to-jsx` from `^9.8.2` to `^9.10.3` ([#5420](https://github.com/rjsf-team/react-jsonschema-form/pull/5420))
+- Fixed `Form` failing validation with `must be boolean` (or the matching type error) when the root `formData` is a falsy value such as `false`, `0` or `''`. Only `undefined` is now treated as missing before validating, fixing [#5404](https://github.com/rjsf-team/react-jsonschema-form/issues/5404)
+
+## @rjsf/shadcn
+
+- Fixed `RadioWidget` not showing the selected value with `@radix-ui/react-radio-group` 1.4.x, which ignores the per-item `checked` prop. The `RadioGroup` is now controlled by the encoded option value, so it also follows a form reset or an outside `formData` change ([#5420](https://github.com/rjsf-team/react-jsonschema-form/pull/5420))
+- Updated `lucide-react` to `^1.49.0`, which makes `Trash2` an alias of `Trash`: the remove button's icon class changes from `lucide-trash2` to `lucide-trash`, and the `PlusCircle`/`AlertCircle` icons gain `lucide-plus-circle`/`lucide-alert-circle` classes. Update any CSS or test selectors that target `.lucide-trash2` ([#5420](https://github.com/rjsf-team/react-jsonschema-form/pull/5420))
+
+## @rjsf/utils
+
+- Upgraded `@x0k/json-schema-merge` to `^1.1.0`, which merges `if`/`then`/`else`, `properties`/`patternProperties`/`additionalProperties` and `items`/`additionalItems` as groups. `omitExtraData()` merges an object's `allOf` before evaluating its conditions, and the older merge could pair one entry's `else` with another entry's `if`, so data from an inactive branch was kept. The same merge in `retrieveSchema()` no longer lets an `additionalProperties` or `additionalItems` from one `allOf` entry act on another entry's `properties`/`patternProperties`/`items`
+- Fixed `retrieveSchema()` treating a `$ref` shared by several `dependencies` `oneOf` branches, `allOf` entries, `then`/`else` branches, `anyOf`/`oneOf` options or root properties as a recursion cycle, leaving it unresolved, fixing [#5434](https://github.com/rjsf-team/react-jsonschema-form/issues/5434). Reference resolution now tracks a path-scoped recursion stack, so a `$ref` is a cycle only when it is already being expanded on the current path, and previously expanded schemas keep their source ref on the path through `RJSF_REF_KEY`. Shared references resolve in every branch while recursive schemas still terminate
+- Documented on `Experimental_DefaultFormStateBehavior.allOf` which `allOf` and `if-then-else` defaults `skipDefaults` still provides, related to [#3869](https://github.com/rjsf-team/react-jsonschema-form/issues/3869) ([#5444](https://github.com/rjsf-team/react-jsonschema-form/pull/5444))
+
+## @rjsf/validator-ajv8
+
+- Fixed apps that import only `createPrecompiledValidator` bundling all of AJV anyway: the default export's `customizeValidator()` call is now marked pure, so bundlers drop it ([#5559](https://github.com/rjsf-team/react-jsonschema-form/pull/5559))
+
+## @rjsf/validator-ata
+
+- Updated `ata-validator` from `^1.23.0` to `^1.40.1` ([#5420](https://github.com/rjsf-team/react-jsonschema-form/pull/5420))
+- Updated `ata-validator` from `^1.40.1` to `^1.56.0`. 1.55.0 fixes a crash in precompiled validators: a one-character value under `minLength: 1`, or an emoji under a `maxLength`, threw `_cpLen is not defined`. 1.56.0 loads its code generator on demand in the browser, so with a bundler that splits chunks (Vite, webpack, Rollup) the runtime validator adds about 58 KB gzipped to the first load instead of 135 KB ([#5559](https://github.com/rjsf-team/react-jsonschema-form/pull/5559))
+- Fixed apps that import only `createPrecompiledValidator` bundling all of ata-validator anyway: the default export's `customizeValidator()` call is now marked pure, so bundlers drop it ([#5559](https://github.com/rjsf-team/react-jsonschema-form/pull/5559))
+- `compileSchemaValidators()` and `compileSchemaValidatorsCode()` now pass `ataOptionsOverrides` to ata, so options like `assertFormat: false` apply to the precompiled validator; only `verbose` was used before. `additionalMetaSchemas` and `schemas` overrides with an `$id` are now compiled into the module, so a custom meta-schema applies there too; they go in under the `$id` a `$ref` reaches each by (a draft-04 `id` in `schemas` where the entry is read as draft-04) and as the runtime validator ends up with them, a later entry replacing an earlier one with the same `$id` and the form's own schemas winning. A json-schema.org meta-schema passed in is compiled in too, with a warning giving its size, since ata already ships the official draft-04 to 2020-12 ones. `extenderFn` and the `coerceTypes`, `removeAdditional` and `keywords` overrides cannot be carried into the generated module: they were dropped silently and now log a warning, once per process, saying the precompiled and runtime validators may disagree. Extra schemas without an `$id`, which ata requires, log their own warning. Passing `suppressDuplicateFiltering` to the compile step also warns, pointing to `createPrecompiledValidator()` ([#5559](https://github.com/rjsf-team/react-jsonschema-form/pull/5559))
+- Fixed `ataOptionsOverrides.schemas` being dropped by the runtime validator for every schema other than the root once a root schema was registered, a custom meta-schema among them: the root is now added after the caller's `schemas` instead of in their place, so it still wins over an entry with its `$id`, an `additionalMetaSchemas` entry with the root's `$id` no longer replaces it there, and the root's own validator reads `schemas` through the same list, so the root and its sub-schemas apply the same rules; a boolean record entry keeps its meaning ([#5571](https://github.com/rjsf-team/react-jsonschema-form/pull/5571))
+
+## Dev / docs / playground
+
+- Upgraded dependencies with minor or patch version bumps across all packages, including `nx`/`@nx/js`, `vite`, `@vitejs/plugin-react`, `@tailwindcss/cli`, `knip` and `lint-staged`, plus the playground's `monaco-editor` from `^0.55.1` to `^0.57.0`. Added `pnpm` overrides that pin `@types/react` and `@types/react-dom` to React 18 so libraries with an optional `@types/react` peer don't typecheck against React 19's types, plus one that holds `jsdom` at `~30.0.1` because 30.1 needs the global `Iterator` that Node 20 lacks. Renamed the vitest configs to `.mts` so Vite's `native` config loader can load them as ESM ([#5420](https://github.com/rjsf-team/react-jsonschema-form/pull/5420))
+- Documented in the `allOf` section of `form-props.md`, and on `Experimental_DefaultFormStateBehavior.allOf`, which `allOf` and `if-then-else` defaults `skipDefaults` still provides, and added tests for those cases, related to [#3869](https://github.com/rjsf-team/react-jsonschema-form/issues/3869) ([#5444](https://github.com/rjsf-team/react-jsonschema-form/pull/5444))
+- Documented precompiled validators for `@rjsf/validator-ata` in `usage/validation.md`, and added size-limit canaries that fail if `createPrecompiledValidator` stops tree-shaking in either validator package ([#5559](https://github.com/rjsf-team/react-jsonschema-form/pull/5559))
+
+# 6.11.0
+
+## @rjsf/antd
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/chakra-ui
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/core
+
+- Fixed a `schema` prop change being silently dropped when it adds a property with a `default`, either as the parent's reply to `onChange` or at any point after a change to an uncontrolled form. The guard that keeps a oneOf/anyOf option switch from reverting now only applies when the form re-derives its own `formData` (an uncontrolled form, or a parent holding what `onChange` emitted, including when it reshaped the emitted value by spreading it, storing `undefined` as `null` or round-tripping it through JSON) with the same `schema` and `experimental_defaultFormStateBehavior`, and it keeps only that `formData` rather than dropping the rest of the prop update, fixing [#5294](https://github.com/rjsf-team/react-jsonschema-form/issues/5294)
+- Fixed switching between `oneOf`/`anyOf` options keeping a value the previous option's `default` put there, so a property whose value still matches that default, or a whole option that does, now picks up the new option's `default` the way a scalar property already did, and switching back to an option restores its own defaults. A property the new option cannot hold as it stands now picks the new `default` up as well instead of arriving empty — one whose type differs between the options, or a `readOnly` one edited away from its default. Values are compared whole, so a nested object the user has partly edited keeps the rest of the old option's defaults, and a value equal to the old default is replaced no matter who supplied it, including one passed in `formData`, since the two cannot be told apart, fixing [#4476](https://github.com/rjsf-team/react-jsonschema-form/issues/4476)
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/daisyui
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/primereact
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/shadcn
+
+- Updated `CheckboxWidget` to apply the HTML `required` attribute only where the schema requires a `true` value (`const`, a single-value `enum`, or the equivalent `anyOf`/`oneOf`/`allOf`), matching the asterisk on the label, so a required `boolean` field that accepts `false` no longer blocks submitting its valid `false`, fixing [#5388](https://github.com/rjsf-team/react-jsonschema-form/issues/5388)
+
+## @rjsf/utils
+
+- Updated `Experimental_DefaultFormStateBehavior` to add a new `requiredBooleanDefault` option, and updated `getDefaultFormState()` to honor it: `skip` turns off the `false` populated for a required boolean with no `default` (introduced in 6.9.0 by [#5170](https://github.com/rjsf-team/react-jsonschema-form/pull/5170)), so a form that models an unanswered boolean as its own state can keep it `undefined` and let `required` report it. The default, `populateFalse`, keeps the 6.9.0+ behavior
+
+## @rjsf/validator-ata
+
+- Updated `ata-validator` from `^1.7.1` to `^1.23.0`, picking up the corrected error shape for `unevaluatedProperties` (the error now carries `params.unevaluatedProperty`), the removal of a quadratic in `additionalProperties: false` schemas with many properties, a fix for a hang on truncated JSON input, and enforced strict-mode schema checks ([#5293](https://github.com/rjsf-team/react-jsonschema-form/pull/5293))
+
+## Dev / docs / playground
+
+- Documented the `requiredBooleanDefault` option in `form-props.md` and `internals.md`, and added a selector for it to the playground
+
+# 6.10.1
+
+## @rjsf/core
+
+- Fixed a `dependencies`/`if` branch switch nested inside an object property never sanitizing a sibling field's now-invalid value. The check gating sanitization only compared the root retrieved schema, which never reflects a conditional resolved deeper in the tree, so it always skipped sanitizing in that case, fixing ([#5250](https://github.com/rjsf-team/react-jsonschema-form/issues/5250))
+- Fixed `NumberField` losing or misinterpreting decimal input in comma-decimal locales, and passing a locale-formatted string instead of a `number` to custom and format-registered widgets, fixing [#5199](https://github.com/rjsf-team/react-jsonschema-form/issues/5199) and [#5241](https://github.com/rjsf-team/react-jsonschema-form/issues/5241)
+- Fixed `NumberField` still comma-formatting the displayed value for a `text` widget with an explicit `ui:options.inputType` override in a comma-decimal locale; `getInputProps()` gives that override priority over the locale-based `text` fallback, so it rendered a native, locale-unaware `<input type="number">` that rejected the comma-formatted string
+
+## @rjsf/mantine
+
+- Fixed `BaseInputTemplate` passing an `undefined` value straight through to `NumberInput`/`TextInput`, which let the DOM input fall out of sync with React's controlled value and retain a stray digit after clearing a multi-digit number field ([#5269](https://github.com/rjsf-team/react-jsonschema-form/issues/5269))
+- Backported the `fluid` `Container` layout fix from the v7 Mantine 9 upgrade ([#5260](https://github.com/rjsf-team/react-jsonschema-form/pull/5260)): `GridTemplate`'s and `ObjectFieldTemplate`'s root `Container` now use Mantine's `fluid` prop so forms fill their available width instead of centering at Mantine's default 960px max-width
+
+## @rjsf/shadcn
+
+- Fixed the documented `import '@rjsf/shadcn/dist/[theme].css'` failing to resolve. The prebuilt stylesheets were in the published tarball but no `exports` entry matched them, so Node and every bundler that honours the exports map rejected the path
+
+## @rjsf/utils
+
+- Fixed `sanitizeDataForNewSchema()` to resolve `dependencies`, `if`/`then`/`else` and `allOf` (not just `$ref`) on each property's old/new schema before comparing them, so a conditional nested inside an object property is taken into account when sanitizing its data, fixing ([#5250](https://github.com/rjsf-team/react-jsonschema-form/issues/5250))
+- Added `schemaHasNestedConditional()`, which `Form` uses to detect a `dependencies`/`if` nested below a schema's top level (behind a `$ref`, `patternProperties`, tuple `items`, `additionalProperties` or `allOf`/`anyOf`/`oneOf`) so sanitization isn't skipped just because the root retrieved schema looks unchanged ([#5250](https://github.com/rjsf-team/react-jsonschema-form/issues/5250))
+- Fixed `getInputProps()` defaulting `type: number` schemas to a native `number` input in locales whose decimal separator isn't `.`, where the browser rejects the localized value; it now defaults to a `text` input in those locales unless an explicit `inputType` is set
+- Added `resolveDefaultWidget()`, extracting the widget-name/`enumOptions` fallback logic shared by `@rjsf/core`'s `StringField` and `NumberField` so the two can no longer drift out of sync
+- Upgraded `@x0k/json-schema-merge` to `^1.0.6`, which now preserves Symbol-keyed properties (e.g. `Symbol(__rjsf_ref)`) when merging `allOf` schemas and no longer collapses distinct `allOf.contains` branches into one over-constrained schema; removed the corresponding Symbol-preservation and `contains`-extraction workarounds from `retrieveSchemaInternal()`, fixing ([#5146](https://github.com/rjsf-team/react-jsonschema-form/issues/5146))
+- Fixed defaults from a dependency subschema being omitted when `getDefaultFormState()` is called without form data or with an empty object, fixing [#5198](https://github.com/rjsf-team/react-jsonschema-form/issues/5198)
+- Fixed `computeDefaults()` to merge a non-object schema's `allOf` when `experimental_defaultFormStateBehavior.allOf` is set to `populateDefaults`, so a `$ref` wrapped in a single-element `allOf` now populates the same defaults as the bare `$ref` does, fixing [#5177](https://github.com/rjsf-team/react-jsonschema-form/issues/5177)
+
+## Dev / docs / playground
+
+- Fixed the size-limit report never being posted on a pull request from a fork. The comment workflow resolved the PR from its head sha, which the base repository cannot associate with a fork's commit, so it warned and skipped — leaving a green check and no comment. The measuring job now records the PR number in its artifact, and the comment workflow looks that PR up directly, accepts it only if its head sha matches the run's trusted `workflow_run` head sha, and fails loudly rather than skipping when the PR cannot be found
+- Extended the size-limit checks to cover every released package rather than just `@rjsf/core`, `@rjsf/utils` and `@rjsf/validator-ajv8`. The checks are derived from each package's own `package.json`, so a new package or a dependency change needs no config edit; only the packages that already had budgets enforce one, the rest are measured and reported
+- Moved `size-limit` and its preset out of the root `devDependencies` into their own pnpm project under `.github/size-limit`, so they are installed only by the size-limit workflow
+
+# 6.10.0
+
+## @rjsf/chakra-ui
+
+- Removed an `environment` prop the test wrapper passed to `EnvironmentProvider`, which has no such prop and silently ignored it
+
+## @rjsf/core
+
+- Fixed defaults not being restored when returning to an `anyOf` or `oneOf` option with disjoint properties ([#3736](https://github.com/rjsf-team/react-jsonschema-form/issues/3736))
+- Added `ui:autocapitalize` support for inputs rendered by `BaseInputTemplate`, allowing mobile keyboards to apply the requested capitalization behavior ([#2187](https://github.com/rjsf-team/react-jsonschema-form/issues/2187))
+
+## @rjsf/mantine
+
+- Added `ui:autocapitalize` support for text inputs ([#2187](https://github.com/rjsf-team/react-jsonschema-form/issues/2187))
+
+## @rjsf/mui
+
+- Added `ui:autocapitalize` support for text inputs ([#2187](https://github.com/rjsf-team/react-jsonschema-form/issues/2187))
+
+## @rjsf/utils
+
+- Fixed `sanitizeDataForNewSchema()` clearing existing arrays or preserving stale `undefined` values instead of retaining data or applying defaults for properties newly defined by the incoming schema ([#3736](https://github.com/rjsf-team/react-jsonschema-form/issues/3736))
+- Added `autocapitalize` UI option handling to `getInputProps()` and its public input prop types ([#2187](https://github.com/rjsf-team/react-jsonschema-form/issues/2187))
+
+## Dev / docs / playground
+
+- Documented `ui:autocapitalize`, added it to the simple playground sample, and added cross-theme regression coverage ([#2187](https://github.com/rjsf-team/react-jsonschema-form/issues/2187))
+
+## @rjsf/validator-ajv8
+
+- Changed the `standaloneCode` import to name the file, `ajv/dist/standalone/index.js`, instead of the directory subpath `ajv/dist/standalone`. A `tsc-alias` replacer used to patch this into the emitted output; the source now says what it means. No public API changed
+
+## Dev / docs / playground
+
+- Relative TypeScript imports now name their real `.ts`/`.tsx` source file (and an explicit `index.ts` for directory imports), and TypeScript's `rewriteRelativeImportExtensions` emits the `.js` specifiers directly. This removes `tsc-alias` and its post-emit string rewriting entirely, along with the `tsc-alias-replacer/` directory, both `tsconfig.replacer.json` files, the `compileReplacer` scripts and `move-file-cli`. Naming the source file rather than the output is deliberate: Node's native type stripping requires exact `.ts` extensions and does no extension or directory-index searching, so this avoids a second repository-wide import migration later
+- Fixed `packages/daisyui/test/tsconfig.json`, which was configured to emit into `../dist` — the esbuild/rollup bundle output directory — instead of type-checking without emit like every other test project
+- Collapsed each package's `tsconfig.json` + `tsconfig.build.json` + `src/tsconfig.json` chain into one source config plus one test config extending a new shared root `tsconfig.test.json`. Building a package no longer pulls its dependencies' test projects into the graph
+- Fixed the root `tsconfig.json`, which referenced `snapshot-tests` twice and omitted `mantine`, `primereact`, `validator-ata` and `validator-cfworker`. It now lists every source and test project once, and a new root `typecheck` script runs in CI, so tests are typechecked for the first time. That surfaced stale tests in `@rjsf/chakra-ui` and `@rjsf/validator-ata` and two drifted playground samples, fixed here. `@rjsf/chakra-ui`'s `type-check` script previously ran against a solution config with `files: []` and checked nothing
+- Every package now emits `lib/` with the same settings: `esnext` target plus `.js.map` and `.d.ts.map`. Previously only `@rjsf/core` did; the rest emitted ES2018 with JS source maps only, depending on which root config their `src/tsconfig.json` extended
+- `tsconfig.tsbuildinfo` is no longer written into `lib/` and published with it. In 6.8.0 it was 446 kB of `@rjsf/antd`'s 959 kB unpacked tarball
+- Set `"types": []` in `tsconfig.base.json` so packages no longer see every hoisted `@types/*`, with Node-using packages opting in, and `"lib": ["ESNext"]` in the three validator packages so they cannot compile against browser globals
+- `build:ts` is now plain `tsc -b`. The old `rimraf ./lib` also deleted the build-info, forcing a full rebuild every time; the build-info is now an Nx `build` output alongside `lib/` so cache restores stay coherent
+- Added `"type": "module"` to `@rjsf/snapshot-tests`, which publishes ESM `.js` files
+- Enabled `verbatimModuleSyntax`, so type-only imports must be written as `import type`. The one import it affected, `React` in `@rjsf/utils`'s `shouldRender.ts`, is now type-only, so emitted output is unchanged
+
+# 6.9.0
+
+> **Potentially breaking change:** `lodash` and `lodash-es` are no longer dependencies of any `@rjsf/*` package. No RJSF public API changed, but an application that imports `lodash` itself without declaring it — relying on it being hoisted into `node_modules` because RJSF depended on it — must now add `lodash` to its own `package.json`.
+
+## @rjsf/antd
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Fixed `BaseInputTemplate` to clear `number`/`integer` fields back to `undefined` instead of `null` when the `InputNumber` widget is emptied, fixing [#5213](https://github.com/rjsf-team/react-jsonschema-form/issues/5213)
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/chakra-ui
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/core
+
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused modules; a consumer importing only `Form` no longer bundles the AJV validator chain pulled in by `getTestRegistry`, shrinking a minimal bundle by ~34kB gzipped
+- Fixed `TimeWidget` to respect schema `multipleOf` time precision, preserving second-precision values while keeping minute-precision native inputs synchronized with their displayed value ([#5174](https://github.com/rjsf-team/react-jsonschema-form/pull/5174))
+- Replaced all path-based `lodash` usage (`get`, `set`, `unset`, `toPath`, `pick`) with the new `@rjsf/utils` path utilities
+- Replaced the remaining non-path `lodash` usage (`isEmpty`, `isObject`, `isPlainObject`, `each`, `flatten`, `includes`, `intersection`, `last`, `uniqueId`, `noop`) with native equivalents, and dropped the `lodash`/`lodash-es` dependencies entirely
+- Fixed the clearing of errors on change so that only the field that actually changed loses its error, along with the errors the containers holding it own, rather than every field under the top-level key holding it, fixing [#5197](https://github.com/rjsf-team/react-jsonschema-form/issues/5197) ([#5205](https://github.com/rjsf-team/react-jsonschema-form/pull/5205))
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Renamed the test file `Form.test.tsx` to `Form.behaviors.test.tsx` so all the `Form` test files follow the `Form.<topic>.test.tsx` naming pattern introduced by [#5219](https://github.com/rjsf-team/react-jsonschema-form/pull/5219)
+- Fixed `ObjectField` to coerce a cleared `additionalProperties`/`patternProperties` value to the empty string only when the change targets the additional property's own path, so clearing a field nested inside an entry now omits that field's key instead of storing `""` in it, fixing [#5222](https://github.com/rjsf-team/react-jsonschema-form/issues/5222)
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/daisyui
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Removed the module-level Font Awesome `library.add()` call from `AddButton`; every icon is passed to `FontAwesomeIcon` as an imported icon object, so the global registry was never consulted
+- Registered `ArrayFieldDescriptionTemplate` and `ArrayFieldTitleTemplate` in `generateTemplates()`; `ArrayFieldTemplate` already looked these up from the registry, but since they were never registered, array titles/descriptions silently fell back to `core`'s unstyled defaults instead of the DaisyUI-styled versions the theme ships
+- Added `generateForm`, `generateTemplates`, `generateTheme` and `generateWidgets` exports so `lib/index.d.ts` matches the other themes, and consolidated the duplicate `daisyForm` entry point into `DaisyUIForm`
+- Wired the previously-unused `getDaisy()`/`DaisyProps` helpers into `FieldTemplate`, so `ui:options: { daisy: { theme, className, style } }` now applies a per-field DaisyUI theme, class name and/or style
+- Fixed `build:esm`/`build:umd` in `package.json`, which built and named the bundle as `@rjsf/chakra-ui` (`dist/chakra-ui.esm.js`/`.umd.js`) instead of `@rjsf/daisyui`
+- Gave `ArrayFieldTitleTemplate` and `ArrayFieldDescriptionTemplate` the `id` (`titleId`/`descriptionId` derived from `fieldPathId`) and empty-value guard every other template implementing these has, and that registering them in `generateTemplates()` had otherwise dropped from array titles/descriptions
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/fluentui-rc
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/mantine
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Moved the `dayjs` `customParseFormat` plugin registration from the widgets barrel file into `DateTimeInput`, so it loads with the date widgets that actually need it
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/mui
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/primereact
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Fixed `ArrayFieldTemplate` leaking the `errorSchema` object into the DOM as an `errorschema="[object Object]"` attribute
+- Fixed `SelectWidget` clobbering a consumer-supplied `options.prime.autoComplete` with `undefined` when `ui:autocomplete` is not set
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/react-bootstrap
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/semantic-ui
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Fixed `RadioWidget` forwarding the unsupported `fluid`/`inverted` props to Semantic UI's `Radio`, which triggered React unknown-attribute warnings
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/shadcn
+
+- Updated `CheckboxWidget` to append a `*` onto the end of the label when the field is required AND the schema value is hardcoded to `true`, fixing [#4136](https://github.com/rjsf-team/react-jsonschema-form/issues/4136)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Fixed `FancySelect` showing a red error border on required empty enum fields before validation runs, fixing [#5187](https://github.com/rjsf-team/react-jsonschema-form/issues/5187) ([#5209](https://github.com/rjsf-team/react-jsonschema-form/pull/5209))
+- Fixed `BaseInputTemplate`'s `ui:allowClearTextInputs` clear button to store `ui:emptyValue` (`undefined` by default) instead of always storing `""`, so clicking it now behaves exactly like clearing the input by typing. **Potentially breaking change:** an app that never sets `ui:emptyValue` and clicks the clear button on a field (rather than backspacing it) previously got `""` back; it now gets `undefined`, matching every other way of emptying the field.
+
+## @rjsf/utils
+
+- Fixed `mergeDefaultsWithFormData()` to take the recursive path when the default under an object key holds an array, so a default that lives inside a `dependencies` subschema is no longer dropped when the owning array sits more than one object below the root, fixing part of [#5198](https://github.com/rjsf-team/react-jsonschema-form/issues/5198) ([#5202](https://github.com/rjsf-team/react-jsonschema-form/pull/5202))
+- Added new path utilities `getByPath`, `setByPath`, `hasByPath`, `unsetByPath` and `toPath`, and switched all path-based `lodash` usage (`get`, `set`, `setWith`, `has`, `unset`, `toPath`, `pick`) over to them. Unlike their lodash counterparts, these treat a bare string as a single literal key, lodash-style dotted path strings are parsed explicitly via `toPath()`, and `getByPath()`/`hasByPath()` resolve **own** properties only (inherited members and prototype internals such as `__proto__` never resolve)
+- Replaced the remaining non-path `lodash` usage (`isEmpty`, `isObject`, `isPlainObject`, `difference`, `times`, `uniqueId`, `noop`) with native equivalents, and dropped the `lodash`/`lodash-es` dependencies entirely
+- Added `isPlainObject`, the stricter counterpart to `isObject()` that excludes class instances, replacing `lodash/isPlainObject` for consumers
+- Added `getPropertySchema()`, which reads a property sub-schema out of a schema's `properties`, defaulting to an empty schema; it replaces the repeated `(schema[PROPERTIES_KEY]?.[key] ?? {}) as S` lookups in `@rjsf/utils` and `@rjsf/core`
+- Added `noop()`, a do-nothing function replacing `lodash/noop` for consumers
+- Added an optional `deep` flag to `getChangedFields()` that descends into nested objects and same-length arrays and returns the dotted path of the field that changed ([#5205](https://github.com/rjsf-team/react-jsonschema-form/pull/5205))
+- Made the default value of a required boolean field be false if a `default` is not present in the schema
+- Fixed `omitExtraData()` by removing the over-reaching `additionalProperties: false` post-processing block introduced in [#5147](https://github.com/rjsf-team/react-jsonschema-form/pull/5147) that incorrectly stripped keys written by winning `oneOf`/`anyOf` and `if/then/else` branches, fixing [#5194](https://github.com/rjsf-team/react-jsonschema-form/issues/5194)
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+- Sped up the test suite (~6.2s → ~2.7s) by defaulting to vitest's `node` environment; the few DOM-dependent test files opt back into jsdom with a `@vitest-environment` pragma, and the shared test setup skips its ResizeObserver mock when there is no `window`
+
+## @rjsf/validator-ajv8
+
+- Replaced all `lodash/get` usage with the new `@rjsf/utils` path utilities
+- Replaced `lodash/isObject` with `isObject` from `@rjsf/utils` and dropped the `lodash`/`lodash-es` dependencies entirely
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+
+## @rjsf/validator-ata
+
+- Replaced all `lodash/get` usage with the new `@rjsf/utils` path utilities
+- Replaced `lodash/isObject` with `isObject` from `@rjsf/utils` and dropped the `lodash`/`lodash-es` dependencies entirely
+- Updated `ata-validator` dependency to `^1.7.1`, picking up lazily materialized errors and the closure-tree interpreted engine ([#5211](https://github.com/rjsf-team/react-jsonschema-form/pull/5211))
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+
+## @rjsf/validator-cfworker
+
+- Replaced all `lodash/get` usage with the new `@rjsf/utils` path utilities and dropped the `lodash`/`lodash-es` dependencies entirely
+- Declared `"sideEffects": false` in `package.json`, allowing bundlers to tree-shake unused exports
+
+## Dev / docs / playground
+
+- Removed the last `lodash` usage from the playground and the test suites, so no package declares `lodash`/`lodash-es` as a direct dependency any more (both remain in the lockfile as transitive dependencies of third-party tooling). The `lodashReplacer` `tsc-alias` machinery that rewrote `lodash` imports to `lodash-es` for the ESM builds has been deleted along with it
+- Cleaned up `@rjsf/validator-ajv8`'s tests: the deliberately-triggered AJV `console.warn` output is now asserted with a shared `expectWarn()` helper instead of leaking into the test output
+- Added `size-limit` CI checks that enforce bundle size budgets for `@rjsf/core`, `@rjsf/utils` and `@rjsf/validator-ajv8` — each measured both with and without its runtime dependencies, plus single-export tree-shaking canaries — and comment the size diff versus the base branch on every PR
+- Restructured `@rjsf/core`'s test suite for speed: the "Form common" suite was split by topic into six test files so vitest can parallelize them, and the `StringField` suite is no longer re-executed via cross-imports from the `ArrayField`/`ObjectField` suites (302 duplicate test executions removed)
+- Added `knip` and removed the unused code, exports and dependencies it reported ([#5194](https://github.com/rjsf-team/react-jsonschema-form/pull/5194))
+- Removed test-setup shims that empirically no longer do anything (each verified by deleting it and running the package's suite): core's `setImmediate` global, antd's `MessageChannel` global, chakra-ui's `structuredClone` JSON polyfill (native since Node 17), mantine's `cleanSnapshotSerializer` (a no-op on all current snapshots), and primereact's `<style>`-injection blocker
+- Upgraded the test tooling: `@testing-library/jest-dom` 6→7, `jsdom` 29→30, `@testing-library/user-event` to 14.6.6, `vitest` to 4.1.11, and declared the `@testing-library/dom` peer explicitly at the root. Self-anchored test selectors were rewritten to `:scope` to match jsdom 30's corrected element-scoped `querySelectorAll` behavior
+- Tests now resolve `@rjsf/*` workspace imports to TypeScript source via a custom `@rjsf/source` export condition (declared in a new shared `testing/vitest.base.ts` that every package's vitest config extends), so `git clone && pnpm install && pnpm vitest run` works with no build step and tests always exercise current source; a root vitest `projects` config also lets vitest run across every package from the repo root, while the nx-driven test scripts remain unchanged
+- Simplified `@rjsf/validator-ajv8`'s precompiled-validator test harness: the tests now compile `superSchema` in memory via a small `compileSuperSchema()` helper, replacing the generated gitignored `superSchema*.cjs` fixtures and with them the `compileSchemas` npm script and the vitest `globalSetup` that regenerated them
+- Updated the `emptyValue` and `allowClearTextInputs` uiSchema docs to indicate relationship each other.
+
 # 6.8.0
 
 ## @rjsf/core
