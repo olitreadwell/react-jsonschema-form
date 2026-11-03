@@ -2,7 +2,7 @@ import type { GenericObjectType } from './types.ts';
 
 /** Given a list of `properties` and an `order` list, returns a list that contains the `properties` ordered correctly.
  * If `order` is not an array, then the untouched `properties` list is returned. Otherwise `properties` is ordered per
- * the `order` list. If `order` contains a '*' then any `properties` that are not mentioned explicity in `order` will be
+ * the `order` list. If `order` contains a '*' then any `properties` that are not mentioned explicitly in `order` will be
  * places in the location of the `*`.
  *
  * @param properties - The list of property keys to be ordered

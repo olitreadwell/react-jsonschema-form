@@ -242,7 +242,7 @@ exports[`nameGenerator > bracketNameGenerator > array of objects 1`] = `
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -488,7 +488,7 @@ exports[`nameGenerator > bracketNameGenerator > array of objects 1`] = `
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -534,7 +534,7 @@ exports[`nameGenerator > bracketNameGenerator > array of objects 1`] = `
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -741,7 +741,7 @@ exports[`nameGenerator > bracketNameGenerator > array of strings 1`] = `
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -877,7 +877,7 @@ exports[`nameGenerator > bracketNameGenerator > array of strings 1`] = `
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -923,7 +923,7 @@ exports[`nameGenerator > bracketNameGenerator > array of strings 1`] = `
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -1434,7 +1434,7 @@ exports[`nameGenerator > bracketNameGenerator > radio field 1`] = `
                         />
                         <input
                           aria-hidden="true"
-                          style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                          style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                           tabindex="-1"
                           type="radio"
                           value="0"
@@ -1465,7 +1465,7 @@ exports[`nameGenerator > bracketNameGenerator > radio field 1`] = `
                         />
                         <input
                           aria-hidden="true"
-                          style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                          style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                           tabindex="-1"
                           type="radio"
                           value="1"
@@ -2062,7 +2062,7 @@ exports[`nameGenerator > dotNotationNameGenerator > array of objects 1`] = `
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -2308,7 +2308,7 @@ exports[`nameGenerator > dotNotationNameGenerator > array of objects 1`] = `
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -2354,7 +2354,7 @@ exports[`nameGenerator > dotNotationNameGenerator > array of objects 1`] = `
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -2561,7 +2561,7 @@ exports[`nameGenerator > dotNotationNameGenerator > array of strings 1`] = `
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -2697,7 +2697,7 @@ exports[`nameGenerator > dotNotationNameGenerator > array of strings 1`] = `
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -2743,7 +2743,7 @@ exports[`nameGenerator > dotNotationNameGenerator > array of strings 1`] = `
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -3388,7 +3388,7 @@ exports[`single fields > Cyclic schema 1`] = `
                           >
                             <svg
                               aria-hidden="true"
-                              class="lucide lucide-circle-alert h-4 w-4"
+                              class="lucide lucide-circle-alert lucide-alert-circle h-4 w-4"
                               fill="none"
                               height="24"
                               stroke="currentColor"
@@ -4769,7 +4769,7 @@ exports[`single fields > help and error display 1`] = `
     >
       <svg
         aria-hidden="true"
-        class="lucide lucide-circle-alert h-4 w-4"
+        class="lucide lucide-circle-alert lucide-alert-circle h-4 w-4"
         fill="none"
         height="24"
         stroke="currentColor"
@@ -5369,7 +5369,7 @@ exports[`single fields > optional data controls > does not show optional control
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -5456,7 +5456,7 @@ exports[`single fields > optional data controls > does not show optional control
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -5543,7 +5543,7 @@ exports[`single fields > optional data controls > does not show optional control
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -5635,7 +5635,7 @@ exports[`single fields > optional data controls > does not show optional control
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -5794,7 +5794,7 @@ exports[`single fields > optional data controls > does not show optional control
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -6097,7 +6097,7 @@ exports[`single fields > optional data controls > does not show optional control
                                     >
                                       <svg
                                         aria-hidden="true"
-                                        class="lucide lucide-circle-plus"
+                                        class="lucide lucide-circle-plus lucide-plus-circle"
                                         fill="none"
                                         height="16"
                                         stroke="currentColor"
@@ -6448,7 +6448,7 @@ exports[`single fields > optional data controls > does not show optional control
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -6536,7 +6536,7 @@ exports[`single fields > optional data controls > does not show optional control
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -6624,7 +6624,7 @@ exports[`single fields > optional data controls > does not show optional control
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -6717,7 +6717,7 @@ exports[`single fields > optional data controls > does not show optional control
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -6878,7 +6878,7 @@ exports[`single fields > optional data controls > does not show optional control
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -7184,7 +7184,7 @@ exports[`single fields > optional data controls > does not show optional control
                                     >
                                       <svg
                                         aria-hidden="true"
-                                        class="lucide lucide-circle-plus"
+                                        class="lucide lucide-circle-plus lucide-plus-circle"
                                         fill="none"
                                         height="16"
                                         stroke="currentColor"
@@ -7306,7 +7306,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                         >
                           <svg
                             aria-hidden="true"
-                            class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                            class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                             fill="none"
                             height="24"
                             stroke="currentColor"
@@ -7422,7 +7422,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-circle-plus"
+                                      class="lucide lucide-circle-plus lucide-plus-circle"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -7588,7 +7588,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -7668,7 +7668,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="24"
                                             stroke="currentColor"
@@ -7765,7 +7765,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -7850,7 +7850,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                  class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                   fill="none"
                                   height="24"
                                   stroke="currentColor"
@@ -7945,7 +7945,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -7991,7 +7991,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -8150,7 +8150,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -8235,7 +8235,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="24"
                                   stroke="currentColor"
@@ -8337,7 +8337,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                                     >
                                       <svg
                                         aria-hidden="true"
-                                        class="lucide lucide-circle-plus"
+                                        class="lucide lucide-circle-plus lucide-plus-circle"
                                         fill="none"
                                         height="24"
                                         stroke="currentColor"
@@ -8666,7 +8666,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -8805,7 +8805,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                                         >
                                           <svg
                                             aria-hidden="true"
-                                            class="lucide lucide-circle-plus"
+                                            class="lucide lucide-circle-plus lucide-plus-circle"
                                             fill="none"
                                             height="16"
                                             stroke="currentColor"
@@ -8938,7 +8938,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                                   >
                                     <svg
                                       aria-hidden="true"
-                                      class="lucide lucide-trash2 lucide-trash-2 h-4 w-4 stroke-destructive"
+                                      class="lucide lucide-trash lucide-trash-2 h-4 w-4 stroke-destructive"
                                       fill="none"
                                       height="24"
                                       stroke="currentColor"
@@ -8985,7 +8985,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -9146,7 +9146,7 @@ exports[`single fields > optional data controls > shows "add" and "remove" optio
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -9387,7 +9387,7 @@ exports[`single fields > optional data controls > shows "add" optional controls 
                         >
                           <svg
                             aria-hidden="true"
-                            class="lucide lucide-circle-plus"
+                            class="lucide lucide-circle-plus lucide-plus-circle"
                             fill="none"
                             height="24"
                             stroke="currentColor"
@@ -9474,7 +9474,7 @@ exports[`single fields > optional data controls > shows "add" optional controls 
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="24"
                                   stroke="currentColor"
@@ -9643,7 +9643,7 @@ exports[`single fields > optional data controls > shows "add" optional controls 
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -9728,7 +9728,7 @@ exports[`single fields > optional data controls > shows "add" optional controls 
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="24"
                                   stroke="currentColor"
@@ -9830,7 +9830,7 @@ exports[`single fields > optional data controls > shows "add" optional controls 
                                     >
                                       <svg
                                         aria-hidden="true"
-                                        class="lucide lucide-circle-plus"
+                                        class="lucide lucide-circle-plus lucide-plus-circle"
                                         fill="none"
                                         height="24"
                                         stroke="currentColor"
@@ -10142,7 +10142,7 @@ exports[`single fields > optional data controls > shows "add" optional controls 
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="lucide lucide-circle-plus"
+                                  class="lucide lucide-circle-plus lucide-plus-circle"
                                   fill="none"
                                   height="16"
                                   stroke="currentColor"
@@ -10408,7 +10408,7 @@ exports[`single fields > radio field 1`] = `
               />
               <input
                 aria-hidden="true"
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="0"
@@ -10439,7 +10439,7 @@ exports[`single fields > radio field 1`] = `
               />
               <input
                 aria-hidden="true"
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="1"
@@ -10519,7 +10519,7 @@ exports[`single fields > radio widget with description in schema and FieldTempla
               />
               <input
                 aria-hidden="true"
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="0"
@@ -10550,7 +10550,7 @@ exports[`single fields > radio widget with description in schema and FieldTempla
               />
               <input
                 aria-hidden="true"
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="1"
@@ -11618,7 +11618,7 @@ exports[`single fields > select field single choice enumDisabled using radio wid
               />
               <input
                 aria-hidden="true"
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="0"
@@ -11652,7 +11652,7 @@ exports[`single fields > select field single choice enumDisabled using radio wid
               <input
                 aria-hidden="true"
                 disabled=""
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="1"
@@ -11734,7 +11734,7 @@ exports[`single fields > select field single choice form disabled using radio wi
               <input
                 aria-hidden="true"
                 disabled=""
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="0"
@@ -11768,7 +11768,7 @@ exports[`single fields > select field single choice form disabled using radio wi
               <input
                 aria-hidden="true"
                 disabled=""
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="1"
@@ -11932,7 +11932,7 @@ exports[`single fields > select field single choice uiSchema disabled using radi
               <input
                 aria-hidden="true"
                 disabled=""
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="0"
@@ -11966,7 +11966,7 @@ exports[`single fields > select field single choice uiSchema disabled using radi
               <input
                 aria-hidden="true"
                 disabled=""
-                style="transform: translateX(-100%); position: absolute; pointer-events: none; opacity: 0; margin: 0px; width: 0px; height: 0px;"
+                style="position: absolute; pointer-events: none; opacity: 0; margin: 0px; transform: translateX(-100%); width: 0px; height: 0px;"
                 tabindex="-1"
                 type="radio"
                 value="1"
@@ -12310,11 +12310,11 @@ exports[`single fields > slider field 1`] = `
               style=""
               tabindex="0"
             />
-            <input
-              style="display: none;"
-              value="75"
-            />
           </span>
+          <input
+            style="display: none;"
+            value="75"
+          />
         </span>
         75
       </div>

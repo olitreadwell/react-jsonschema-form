@@ -67,9 +67,9 @@
     "react": ">=18"
   },
   "dependencies": {
-    "@x0k/json-schema-merge": "^1.0.6",
-    "fast-equals": "^6.0.0",
-    "fast-uri": "^4.1.4",
+    "@x0k/json-schema-merge": "^1.1.0",
+    "fast-equals": "^6.0.4",
+    "fast-uri": "^4.2.1",
     "jsonpointer": "^5.0.1",
     "react-is": "^18.3.1"
   },
